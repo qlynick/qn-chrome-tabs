@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Qn Chrome Tabs 组件演示</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <p class="eyebrow">Web Component Demo</p>
+          <h1>Qn Chrome Tabs</h1>
+          <p data-zh="零框架依赖的标签栏，包含分组、拖拽排序和右键批量关闭。">零框架依赖的标签栏，包含分组、拖拽排序和右键批量关闭。</p>
+        </div>
+        <label class="language-switcher">
+          <span data-zh="语言">语言</span>
+          <select id="language-select" aria-label="语言">
+            <option value="zh">中文</option>
+            <option value="en">English</option>
+            <option value="ko">한국어</option>
+          </select>
+        </label>
+      </header>
+
+      <section class="preset-block">
+        <div class="subsection-heading">
+          <strong data-zh="精选预设">精选预设</strong>
+          <span data-zh="一键应用完整配色方案，也可在下方继续微调">一键应用完整配色方案，也可在下方继续微调</span>
+        </div>
+        <div id="theme-presets" class="theme-presets"></div>
+      </section>
+
+      <div class="customizer-layout">
+        <section class="theme-editor">
+          <div class="section-heading">
+            <div>
+              <h2 data-zh="交互式主题配置">交互式主题配置</h2>
+              <p data-zh="调整后立即预览，并复制生成的 CSS。">调整后立即预览，并复制生成的 CSS。</p>
+            </div>
+            <div class="editor-actions">
+              <button id="reset-theme" type="button" data-zh="恢复默认">恢复默认</button>
+              <button id="copy-theme" type="button" class="primary" data-zh="复制配置">复制配置</button>
+            </div>
+          </div>
+          <div class="subsection-heading configuration-heading">
+            <strong data-zh="精细配置">精细配置</strong>
+            <span data-zh="单独调整尺寸、圆角与颜色">单独调整尺寸、圆角与颜色</span>
+          </div>
+          <div id="theme-controls" class="theme-controls"></div>
+          <pre class="theme-code"><code id="theme-code"></code></pre>
+        </section>
+
+        <aside class="preview-column">
+          <p class="preview-label" data-zh="实时预览">实时预览</p>
+          <section class="demo-card">
+            <div id="tabs-host"></div>
+            <div class="demo-content">
+              <strong id="active-title"></strong>
+              <span data-zh="双击改名；拖拽排序；右击查看批量关闭菜单。">双击改名；拖拽排序；右击查看批量关闭菜单。</span>
+            </div>
+          </section>
+        </aside>
+      </div>
+
+      <section class="info-grid">
+        <article>
+          <h2 data-zh="当前状态">当前状态</h2>
+          <pre id="state-output"></pre>
+        </article>
+        <article>
+          <h2 data-zh="事件日志">事件日志</h2>
+          <ol id="event-log"></ol>
+        </article>
+      </section>
+
+      <section class="quick-start">
+        <div class="quick-start-heading">
+          <div>
+            <p class="eyebrow">Quick Start</p>
+            <h2 data-zh="快速上手">快速上手</h2>
+          </div>
+          <span data-zh="安装后直接注册 Web Component，无需前端框架。">安装后直接注册 Web Component，无需前端框架。</span>
+        </div>
+
+        <div class="install-commands">
+          <div><strong>npm</strong><code>npm install qn-chrome-tabs</code></div>
+          <div><strong>Yarn</strong><code>yarn add qn-chrome-tabs</code></div>
+          <div><strong>pnpm</strong><code>pnpm add qn-chrome-tabs</code></div>
+          <div><strong>Bun</strong><code>bun add qn-chrome-tabs</code></div>
+        </div>
+
+        <div class="usage-examples">
+          <article>
+            <strong>HTML / JavaScript</strong>
+            <pre class="usage-code"><code>&lt;qn-chrome-tabs id="tabs"&gt;&lt;/qn-chrome-tabs&gt;
+&lt;script type="module"&gt;
+  import 'qn-chrome-tabs';
+
+  const tabs = document.querySelector('#tabs');
+  tabs.tabs = [
+    { id: 'home', title: '首页' },
+    { id: 'docs', title: '文档' },
+  ];
+  tabs.activeTabId = 'home';
+&lt;/script&gt;</code></pre>
+          </article>
+
+          <article>
+            <strong>Vue</strong>
+            <pre class="usage-code"><code>&lt;script setup&gt;
+import { onMounted, ref } from 'vue';
+import 'qn-chrome-tabs';
+
+const tabsRef = ref();
+onMounted(() =&gt; {
+  tabsRef.value.tabs = [
+    { id: 'home', title: '首页' },
+    { id: 'docs', title: '文档' },
+  ];
+  tabsRef.value.activeTabId = 'home';
+});
+&lt;/script&gt;
+
+&lt;template&gt;
+  &lt;qn-chrome-tabs ref="tabsRef" /&gt;
+&lt;/template&gt;</code></pre>
+          </article>
+
+          <article>
+            <strong>React</strong>
+            <pre class="usage-code"><code>import { useEffect, useRef } from 'react';
+import 'qn-chrome-tabs';
+
+export function Tabs() {
+  const tabsRef = useRef(null);
+
+  useEffect(() =&gt; {
+    tabsRef.current.tabs = [
+      { id: 'home', title: '首页' },
+      { id: 'docs', title: '文档' },
+    ];
+    tabsRef.current.activeTabId = 'home';
+  }, []);
+
+  return &lt;qn-chrome-tabs ref={tabsRef} /&gt;;
+}</code></pre>
+          </article>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/main.ts"></script>
+  </body>
+</html>
