@@ -23,6 +23,7 @@ const host = document.querySelector<HTMLDivElement>('#tabs-host')!;
 const activeTitle = document.querySelector<HTMLElement>('#active-title')!;
 const stateOutput = document.querySelector<HTMLElement>('#state-output')!;
 const eventLog = document.querySelector<HTMLOListElement>('#event-log')!;
+const scriptCode = document.querySelector<HTMLElement>('#script-code')!;
 const languageSelect =
   document.querySelector<HTMLSelectElement>('#language-select')!;
 
@@ -76,6 +77,13 @@ const translations: Record<'en' | 'ko', Record<string, string>> = {
     '拖拽排序': 'Reorder tabs', '切换分组': 'Switch group',
     '新建分组': 'Add group', '重命名分组': 'Rename group',
     '删除分组': 'Delete group',
+    'Script 控制示例': 'Script control',
+    '点击常用动作，实时观察标签栏与示例代码。': 'Run common actions and watch the tab bar and code update.',
+    '激活客户管理': 'Activate Customers',
+    '关闭当前标签': 'Close active tab',
+    '关闭所有右侧': 'Close all to the right',
+    '切换工作分组': 'Switch to Work',
+    '切换学习分组': 'Switch to Study',
   },
   ko: {
     '语言': '언어',
@@ -125,6 +133,13 @@ const translations: Record<'en' | 'ko', Record<string, string>> = {
     '拖拽排序': '탭 순서 변경', '切换分组': '그룹 전환',
     '新建分组': '그룹 추가', '重命名分组': '그룹 이름 변경',
     '删除分组': '그룹 삭제',
+    'Script 控制示例': '스크립트 제어',
+    '点击常用动作，实时观察标签栏与示例代码。': '자주 쓰는 동작을 실행하고 탭 바와 코드를 확인하세요.',
+    '激活客户管理': '고객 관리 활성화',
+    '关闭当前标签': '현재 탭 닫기',
+    '关闭所有右侧': '오른쪽 탭 모두 닫기',
+    '切换工作分组': '업무 그룹으로 전환',
+    '切换学习分组': '학습 그룹으로 전환',
   },
 };
 
@@ -692,6 +707,75 @@ tabsElement.addEventListener(chromeTabsEvents.deleteGroup, (event) => {
   log('删除分组', { groupId });
   render();
 });
+
+for (const button of document.querySelectorAll<HTMLButtonElement>('[data-script-action]')) {
+  button.addEventListener('click', () => {
+    const action = button.dataset.scriptAction;
+    if (action === 'activate') {
+      activeGroupId = 'work';
+      groups = groups.map((group) =>
+        group.id === 'work' ? { ...group, activeTabId: 'customers' } : group,
+      );
+      scriptCode.textContent =
+        "tabsElement.activeGroupId = 'work';\ntabsElement.activeTabId = 'customers';";
+      log('Script API', { action: 'activate', tabId: 'customers' });
+      render();
+      return;
+    }
+
+    if (action === 'add') {
+      const tab = {
+        id: crypto.randomUUID(),
+        groupId: activeGroupId,
+        title: `${t('新标签')} ${visibleTabs().length + 1}`,
+      };
+      tabs.push(tab);
+      scriptCode.textContent =
+        "tabsElement.tabs = [...tabsElement.tabs, {\n  id: crypto.randomUUID(),\n  title: 'New tab',\n}];";
+      log('Script API', { action: 'add', tabId: tab.id });
+      activate(tab.id);
+      return;
+    }
+
+    if (action === 'close') {
+      const current = visibleTabs();
+      if (current.length === 1) return;
+      const tabId = activeGroup().activeTabId;
+      const index = current.findIndex((tab) => tab.id === tabId);
+      const remaining = current.filter((tab) => tab.id !== tabId);
+      tabs = tabs.filter((tab) => tab.id !== tabId);
+      scriptCode.textContent =
+        `tabsElement.tabs = tabsElement.tabs.filter(\n  tab => tab.id !== '${tabId}',\n);`;
+      log('Script API', { action: 'close', tabId });
+      activate(remaining[Math.max(0, index - 1)].id);
+      return;
+    }
+
+    if (action === 'closeRight') {
+      const tabId = activeGroup().activeTabId;
+      scriptCode.textContent =
+        `const index = tabsElement.tabs.findIndex(\n  tab => tab.id === '${tabId}',\n);\ntabsElement.tabs = tabsElement.tabs.slice(0, index + 1);`;
+      log('Script API', { action: 'closeRight', tabId });
+      closeMany(tabId, 'right');
+      return;
+    }
+
+    if (action === 'groupWork') {
+      activeGroupId = 'work';
+      scriptCode.textContent =
+        "tabsElement.activeGroupId = 'work';\ntabsElement.tabs = workTabs;";
+      log('Script API', { action: 'switchGroup', groupId: 'work' });
+      render();
+      return;
+    }
+
+    activeGroupId = 'study';
+    scriptCode.textContent =
+      "tabsElement.activeGroupId = 'study';\ntabsElement.tabs = studyTabs;";
+    log('Script API', { action: 'switchGroup', groupId: 'study' });
+    render();
+  });
+}
 
 function applyLocale(nextLocale: ChromeTabsLocale) {
   locale = nextLocale;

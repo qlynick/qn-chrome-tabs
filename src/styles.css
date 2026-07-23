@@ -40,12 +40,25 @@
   background: var(--chrome-tabs-background);
 }
 
+.tab-navigation {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+}
+
 .chrome-tabs {
   position: relative;
   min-width: 0;
   flex: 1;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   font: var(--chrome-tabs-font);
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.chrome-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .chrome-tabs-content {
@@ -53,6 +66,46 @@
   align-items: flex-end;
   width: 100%;
   height: 100%;
+}
+
+.tab-scroll-button {
+  z-index: 5;
+  display: grid;
+  width: 26px;
+  height: var(--chrome-tab-height);
+  align-self: flex-end;
+  padding: 0;
+  border: 0;
+  color: var(--chrome-tab-text-color);
+  background: var(--chrome-tabs-background);
+  cursor: pointer;
+  flex: 0 0 26px;
+  place-items: center;
+}
+
+.tab-scroll-button[hidden] {
+  display: none;
+}
+
+.tab-scroll-button:hover:not(:disabled) {
+  color: var(--chrome-tabs-accent-color);
+  background: var(--chrome-tab-hover-background);
+}
+
+.tab-scroll-button:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.tab-scroll-button svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform: translateY(1px);
 }
 
 .chrome-tab {

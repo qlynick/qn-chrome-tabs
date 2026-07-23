@@ -59,6 +59,24 @@
             <div class="demo-content">
               <strong id="active-title"></strong>
               <span data-zh="双击改名；拖拽排序；右击查看批量关闭菜单。">双击改名；拖拽排序；右击查看批量关闭菜单。</span>
+              <section class="script-control">
+                <div class="script-control-heading">
+                  <div>
+                    <p class="eyebrow">JavaScript API</p>
+                    <h2 data-zh="Script 控制示例">Script 控制示例</h2>
+                    <p data-zh="点击常用动作，实时观察标签栏与示例代码。">点击常用动作，实时观察标签栏与示例代码。</p>
+                  </div>
+                  <div class="script-actions">
+                    <button type="button" data-script-action="activate" data-zh="激活客户管理">激活客户管理</button>
+                    <button type="button" data-script-action="add" data-zh="新增标签">新增标签</button>
+                    <button type="button" data-script-action="close" data-zh="关闭当前标签">关闭当前标签</button>
+                    <button type="button" data-script-action="closeRight" data-zh="关闭所有右侧">关闭所有右侧</button>
+                    <button type="button" data-script-action="groupWork" data-zh="切换工作分组">切换工作分组</button>
+                    <button type="button" data-script-action="group" data-zh="切换学习分组">切换学习分组</button>
+                  </div>
+                </div>
+                <pre class="script-code"><code id="script-code">tabsElement.activeTabId = 'customers';</code></pre>
+              </section>
             </div>
           </section>
         </aside>

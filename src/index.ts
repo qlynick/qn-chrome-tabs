@@ -56,6 +56,8 @@ const messages = {
     closeLeft: '关闭左侧所有',
     closeRight: '关闭右侧所有',
     closeOthers: '关闭其他所有',
+    scrollLeft: '向左滚动标签',
+    scrollRight: '向右滚动标签',
   },
   en: {
     close: 'Close',
@@ -68,6 +70,8 @@ const messages = {
     closeLeft: 'Close all to the left',
     closeRight: 'Close all to the right',
     closeOthers: 'Close other tabs',
+    scrollLeft: 'Scroll tabs left',
+    scrollRight: 'Scroll tabs right',
   },
   ko: {
     close: '닫기',
@@ -80,6 +84,8 @@ const messages = {
     closeLeft: '왼쪽 탭 모두 닫기',
     closeRight: '오른쪽 탭 모두 닫기',
     closeOthers: '다른 탭 모두 닫기',
+    scrollLeft: '탭을 왼쪽으로 스크롤',
+    scrollRight: '탭을 오른쪽으로 스크롤',
   },
 } as const;
 
@@ -96,9 +102,13 @@ export class ChromeTabsElement extends HTMLElement {
   #groups: ChromeTabGroup[] = [];
   #activeGroupId = '';
   #locale: ChromeTabsLocale = browserLocale();
+  readonly #viewport: HTMLDivElement;
   readonly #content: HTMLDivElement;
+  readonly #scrollLeftButton: HTMLButtonElement;
+  readonly #scrollRightButton: HTMLButtonElement;
   readonly #groupContent: HTMLDivElement;
   readonly #contextMenu: HTMLDivElement;
+  readonly #resizeObserver = new ResizeObserver(() => this.#updateScrollControls());
   readonly #closeMenuOnOutsideClick = (event: PointerEvent) => {
     const path = event.composedPath();
     const groupMenu =
@@ -110,18 +120,41 @@ export class ChromeTabsElement extends HTMLElement {
   constructor() {
     super();
     const root = this.attachShadow({ mode: 'open' });
-    root.innerHTML = `<style>${styles}</style><div class="tab-strip" part="strip"><div class="chrome-tabs" part="tab-list" role="tablist"><div class="chrome-tabs-content"></div></div><div class="group-content"></div></div><div class="tab-context-menu" part="context-menu" hidden></div>`;
+    root.innerHTML = `<style>${styles}</style><div class="tab-strip" part="strip"><div class="tab-navigation"><button class="tab-scroll-button" data-direction="left" part="scroll-left-button" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 7-5 5 5 5"/></svg></button><div class="chrome-tabs" part="tab-list" role="tablist"><div class="chrome-tabs-content"></div></div><button class="tab-scroll-button" data-direction="right" part="scroll-right-button" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 7 5 5-5 5"/></svg></button></div><div class="group-content"></div></div><div class="tab-context-menu" part="context-menu" hidden></div>`;
+    this.#viewport = root.querySelector('.chrome-tabs')!;
     this.#content = root.querySelector('.chrome-tabs-content')!;
+    this.#scrollLeftButton = root.querySelector('[data-direction="left"]')!;
+    this.#scrollRightButton = root.querySelector('[data-direction="right"]')!;
     this.#groupContent = root.querySelector('.group-content')!;
     this.#contextMenu = root.querySelector('.tab-context-menu')!;
+    this.#viewport.addEventListener('scroll', () => this.#updateScrollControls());
+    this.#viewport.addEventListener('wheel', (event) => {
+      if (this.#viewport.scrollWidth <= this.#viewport.clientWidth) return;
+      event.preventDefault();
+      this.#viewport.scrollLeft +=
+        Math.abs(event.deltaX) > Math.abs(event.deltaY)
+          ? event.deltaX
+          : event.deltaY;
+    }, { passive: false });
+    for (const button of [this.#scrollLeftButton, this.#scrollRightButton]) {
+      button.addEventListener('click', () => {
+        const direction = button === this.#scrollLeftButton ? -1 : 1;
+        this.#viewport.scrollBy({
+          left: direction * Math.max(160, this.#viewport.clientWidth * 0.7),
+          behavior: 'smooth',
+        });
+      });
+    }
   }
 
   connectedCallback() {
     document.addEventListener('pointerdown', this.#closeMenuOnOutsideClick);
+    this.#resizeObserver.observe(this.#viewport);
   }
 
   disconnectedCallback() {
     document.removeEventListener('pointerdown', this.#closeMenuOnOutsideClick);
+    this.#resizeObserver.disconnect();
   }
 
   set tabs(value: ChromeTabItem[]) {
@@ -185,6 +218,10 @@ export class ChromeTabsElement extends HTMLElement {
 
   #render() {
     const text = messages[this.#locale];
+    this.#scrollLeftButton.setAttribute('aria-label', text.scrollLeft);
+    this.#scrollLeftButton.title = text.scrollLeft;
+    this.#scrollRightButton.setAttribute('aria-label', text.scrollRight);
+    this.#scrollRightButton.title = text.scrollRight;
     const fragment = document.createDocumentFragment();
 
     for (const tab of this.#tabs) {
@@ -381,6 +418,37 @@ export class ChromeTabsElement extends HTMLElement {
     fragment.append(divider, addSlot);
     this.#content.replaceChildren(fragment);
     this.#groupContent.replaceChildren(groupMenu);
+    requestAnimationFrame(() => {
+      this.#updateScrollControls();
+      this.#scrollActiveTabIntoView();
+    });
+  }
+
+  #scrollActiveTabIntoView() {
+    const active = this.#content.querySelector<HTMLElement>('[data-active]');
+    if (!active) return;
+    const left = active.offsetLeft;
+    const right = left + active.offsetWidth;
+    if (left < this.#viewport.scrollLeft) {
+      this.#viewport.scrollLeft = left;
+    } else if (right > this.#viewport.scrollLeft + this.#viewport.clientWidth) {
+      this.#viewport.scrollLeft = right - this.#viewport.clientWidth;
+    }
+  }
+
+  #updateScrollControls() {
+    const buttonWidth = this.#scrollLeftButton.hidden
+      ? 0
+      : this.#scrollLeftButton.offsetWidth + this.#scrollRightButton.offsetWidth;
+    const availableWidth = this.#viewport.clientWidth + buttonWidth;
+    const overflow = this.#viewport.scrollWidth > availableWidth + 1;
+    this.#scrollLeftButton.hidden = !overflow;
+    this.#scrollRightButton.hidden = !overflow;
+    const maxScrollLeft =
+      this.#viewport.scrollWidth - this.#viewport.clientWidth;
+    this.#scrollLeftButton.disabled = this.#viewport.scrollLeft <= 1;
+    this.#scrollRightButton.disabled =
+      this.#viewport.scrollLeft >= maxScrollLeft - 1;
   }
 
   #closeMenu() {

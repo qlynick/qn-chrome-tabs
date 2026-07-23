@@ -2,6 +2,21 @@
   "name": "qn-chrome-tabs",
   "version": "0.1.0",
   "description": "零框架依赖的 Chrome 风格标签栏 Web Component",
+  "keywords": [
+    "web-component",
+    "tabs",
+    "chrome-tabs",
+    "framework-agnostic",
+    "micro-frontend"
+  ],
+  "homepage": "https://qlynick.github.io/qn-chrome-tabs/",
+  "bugs": {
+    "url": "https://github.com/qlynick/qn-chrome-tabs/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qlynick/qn-chrome-tabs.git"
+  },
   "type": "module",
   "files": ["dist"],
   "exports": {
@@ -13,7 +28,8 @@
   "scripts": {
     "dev": "vite --config demo/vite.config.ts",
     "build": "vite build && tsc -p tsconfig.json",
-    "build:demo": "vite build --config demo/vite.config.ts"
+    "build:demo": "vite build --config demo/vite.config.ts",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "typescript": "~6.0.2",
