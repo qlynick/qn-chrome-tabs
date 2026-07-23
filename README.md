@@ -3,6 +3,8 @@
 零框架依赖的 Chrome 风格标签栏 Web Component。组件只负责展示和派发事件，
 标签、分组及持久化状态由使用方管理，可用于原生 HTML、React、Vue 等项目。
 
+[在线 Demo](https://qlynick.github.io/qn-chrome-tabs/)
+
 ## 特性
 
 - Chrome 风格活动、悬停、关闭和新增标签交互

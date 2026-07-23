@@ -2,6 +2,7 @@ import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  base: '/qn-chrome-tabs/',
   root: resolve(import.meta.dirname),
   server: {
     fs: {
