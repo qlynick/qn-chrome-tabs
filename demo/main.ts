@@ -30,6 +30,7 @@ const languageSelect =
 const translations: Record<'en' | 'ko', Record<string, string>> = {
   en: {
     '语言': 'Language',
+    'GitHub 仓库': 'GitHub repository',
     '零框架依赖的标签栏，包含分组、拖拽排序和右键批量关闭。': 'A framework-free tab bar with groups, drag sorting, and batch close menus.',
     '精选预设': 'Featured presets',
     '一键应用完整配色方案，也可在下方继续微调': 'Apply a complete theme, then fine-tune it below',
@@ -87,6 +88,7 @@ const translations: Record<'en' | 'ko', Record<string, string>> = {
   },
   ko: {
     '语言': '언어',
+    'GitHub 仓库': 'GitHub 저장소',
     '零框架依赖的标签栏，包含分组、拖拽排序和右键批量关闭。': '프레임워크 없이 그룹, 드래그 정렬, 일괄 닫기를 지원하는 탭 바입니다.',
     '精选预设': '추천 프리셋',
     '一键应用完整配色方案，也可在下方继续微调': '테마를 바로 적용하고 아래에서 세부 조정하세요',

@@ -58,6 +58,39 @@ h2 {
   font-size: 13px;
 }
 
+.header-actions,
+.github-link {
+  display: flex;
+  align-items: center;
+}
+
+.header-actions {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.github-link {
+  gap: 7px;
+  padding: 8px 11px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  color: #344054;
+  background: #fff;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.github-link:hover {
+  border-color: #98a2b3;
+  background: #f9fafb;
+}
+
+.github-link svg {
+  width: 17px;
+  height: 17px;
+  fill: currentColor;
+}
+
 .language-switcher select {
   padding: 8px 30px 8px 10px;
   border: 1px solid #d0d5dd;
