@@ -102,6 +102,10 @@ export class ChromeTabsElement extends HTMLElement {
   #groups: ChromeTabGroup[] = [];
   #activeGroupId = '';
   #locale: ChromeTabsLocale = browserLocale();
+  #frozenTabWidths = new Map<string, number>();
+  #enteringTabIds = new Set<string>();
+  #tabsInitialized = false;
+  readonly #navigation: HTMLDivElement;
   readonly #viewport: HTMLDivElement;
   readonly #content: HTMLDivElement;
   readonly #scrollLeftButton: HTMLButtonElement;
@@ -121,12 +125,14 @@ export class ChromeTabsElement extends HTMLElement {
     super();
     const root = this.attachShadow({ mode: 'open' });
     root.innerHTML = `<style>${styles}</style><div class="tab-strip" part="strip"><div class="tab-navigation"><button class="tab-scroll-button" data-direction="left" part="scroll-left-button" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 7-5 5 5 5"/></svg></button><div class="chrome-tabs" part="tab-list" role="tablist"><div class="chrome-tabs-content"></div></div><button class="tab-scroll-button" data-direction="right" part="scroll-right-button" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 7 5 5-5 5"/></svg></button></div><div class="group-content"></div></div><div class="tab-context-menu" part="context-menu" hidden></div>`;
+    this.#navigation = root.querySelector('.tab-navigation')!;
     this.#viewport = root.querySelector('.chrome-tabs')!;
     this.#content = root.querySelector('.chrome-tabs-content')!;
     this.#scrollLeftButton = root.querySelector('[data-direction="left"]')!;
     this.#scrollRightButton = root.querySelector('[data-direction="right"]')!;
     this.#groupContent = root.querySelector('.group-content')!;
     this.#contextMenu = root.querySelector('.tab-context-menu')!;
+    this.#navigation.addEventListener('pointerleave', () => this.#releaseTabWidths());
     this.#viewport.addEventListener('scroll', () => this.#updateScrollControls());
     this.#viewport.addEventListener('wheel', (event) => {
       if (this.#viewport.scrollWidth <= this.#viewport.clientWidth) return;
@@ -158,6 +164,13 @@ export class ChromeTabsElement extends HTMLElement {
   }
 
   set tabs(value: ChromeTabItem[]) {
+    if (this.#tabsInitialized) {
+      const currentTabIds = new Set(this.#tabs.map((tab) => tab.id));
+      for (const tab of value) {
+        if (!currentTabIds.has(tab.id)) this.#enteringTabIds.add(tab.id);
+      }
+    }
+    this.#tabsInitialized = true;
     this.#tabs = value;
     this.#render();
   }
@@ -234,6 +247,18 @@ export class ChromeTabsElement extends HTMLElement {
       element.setAttribute('role', 'tab');
       element.setAttribute('aria-selected', String(active));
       element.draggable = true;
+      if (this.#enteringTabIds.has(tab.id)) {
+        element.toggleAttribute('data-entering', true);
+        element.addEventListener('animationend', () => {
+          this.#enteringTabIds.delete(tab.id);
+          element.removeAttribute('data-entering');
+        }, { once: true });
+      }
+      const frozenWidth = this.#frozenTabWidths.get(tab.id);
+      if (frozenWidth !== undefined) {
+        element.style.flex = `0 0 ${frozenWidth}px`;
+        element.style.maxWidth = `${frozenWidth}px`;
+      }
       if (active) {
         element.style.setProperty(
           '--tab-background',
@@ -308,9 +333,20 @@ export class ChromeTabsElement extends HTMLElement {
       close.className = 'chrome-tab-close';
       close.setAttribute('part', 'close-button');
       close.setAttribute('aria-label', `${text.close} ${tab.title}`);
+      close.addEventListener('dblclick', (event) => event.stopPropagation());
       close.addEventListener('click', (event) => {
         event.stopPropagation();
-        this.#emit(chromeTabsEvents.close, { tabId: tab.id });
+        if (element.hasAttribute('data-closing')) return;
+        this.#freezeTabWidths(tab.id);
+        element.toggleAttribute('data-closing', true);
+        let emitted = false;
+        const finish = () => {
+          if (emitted) return;
+          emitted = true;
+          this.#emit(chromeTabsEvents.close, { tabId: tab.id });
+        };
+        element.addEventListener('animationend', finish, { once: true });
+        window.setTimeout(finish, 200);
       });
 
       content.append(title, close);
@@ -420,8 +456,43 @@ export class ChromeTabsElement extends HTMLElement {
     this.#groupContent.replaceChildren(groupMenu);
     requestAnimationFrame(() => {
       this.#updateScrollControls();
-      this.#scrollActiveTabIntoView();
+      if (this.#frozenTabWidths.size === 0) this.#scrollActiveTabIntoView();
     });
+  }
+
+  #freezeTabWidths(closingTabId: string) {
+    const tabs = [...this.#content.querySelectorAll<HTMLElement>('.chrome-tab')];
+    if (this.#frozenTabWidths.size === 0) {
+      for (const tab of tabs) {
+        if (tab.dataset.tabId) {
+          this.#frozenTabWidths.set(tab.dataset.tabId, tab.getBoundingClientRect().width);
+        }
+      }
+    }
+    const closingIndex = tabs.findIndex((tab) => tab.dataset.tabId === closingTabId);
+    if (closingIndex === tabs.length - 1 && closingIndex > 0) {
+      const extraWidth =
+        this.#frozenTabWidths.get(closingTabId)! / closingIndex;
+      for (const tab of tabs.slice(0, closingIndex)) {
+        const tabId = tab.dataset.tabId;
+        if (tabId) {
+          this.#frozenTabWidths.set(
+            tabId,
+            this.#frozenTabWidths.get(tabId)! + extraWidth,
+          );
+        }
+      }
+    }
+  }
+
+  #releaseTabWidths() {
+    if (this.#frozenTabWidths.size === 0) return;
+    this.#frozenTabWidths.clear();
+    for (const tab of this.#content.querySelectorAll<HTMLElement>('.chrome-tab')) {
+      tab.style.removeProperty('flex');
+      tab.style.removeProperty('max-width');
+    }
+    this.#updateScrollControls();
   }
 
   #scrollActiveTabIntoView() {
@@ -437,6 +508,7 @@ export class ChromeTabsElement extends HTMLElement {
   }
 
   #updateScrollControls() {
+    if (this.#frozenTabWidths.size > 0) return;
     const buttonWidth = this.#scrollLeftButton.hidden
       ? 0
       : this.#scrollLeftButton.offsetWidth + this.#scrollRightButton.offsetWidth;

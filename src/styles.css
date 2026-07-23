@@ -118,6 +118,36 @@
   user-select: none;
 }
 
+.chrome-tab[data-entering] {
+  animation: chrome-tab-enter 160ms ease-out;
+}
+
+.chrome-tab[data-closing] {
+  pointer-events: none;
+  animation: chrome-tab-close 140ms ease-in forwards;
+}
+
+@keyframes chrome-tab-enter {
+  from {
+    opacity: 0;
+    transform: scaleX(0.88);
+  }
+}
+
+@keyframes chrome-tab-close {
+  to {
+    opacity: 0;
+    transform: scaleX(0.88);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chrome-tab[data-entering],
+  .chrome-tab[data-closing] {
+    animation-duration: 1ms;
+  }
+}
+
 .chrome-tab[data-dragging] {
   opacity: 0.45;
 }
