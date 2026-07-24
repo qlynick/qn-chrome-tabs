@@ -1,9 +1,14 @@
 # Qn Chrome Tabs
 
-零框架依赖的 Chrome 风格标签栏 Web Component。组件只负责展示和派发事件，
-标签、分组及持久化状态由使用方管理，可用于原生 HTML、React、Vue 等项目。
+零框架依赖的 Chrome 风格标签栏 Web Component。可直接放进普通 HTML，也可以在
+Vue、React 或其他前端项目中使用。
 
-[在线 Demo](https://qlynick.github.io/qn-chrome-tabs/)
+[在线 Demo](https://qlynick.github.io/qn-chrome-tabs/) ·
+[GitHub](https://github.com/qlynick/qn-chrome-tabs) ·
+[npm](https://www.npmjs.com/package/qn-chrome-tabs)
+
+> Qn Chrome Tabs 负责显示标签和派发操作事件，不会替你保存业务数据。用户点击关闭、
+> 新增或切换标签后，由你的 JavaScript 更新标签数组。这样它可以安全地接入不同项目。
 
 ## 特性
 
@@ -23,33 +28,108 @@
 - 完整 TypeScript 类型
 - 无运行时依赖
 
-## 安装
+## 快速开始
+
+### 方式一：纯 HTML，无需安装
+
+新建一个 `index.html`，复制下面的完整代码，然后通过本地服务器打开即可：
+
+```html
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Qn Chrome Tabs 示例</title>
+  </head>
+  <body>
+    <qn-chrome-tabs id="tabs"></qn-chrome-tabs>
+
+    <script
+      type="module"
+      src="https://cdn.jsdelivr.net/gh/qlynick/qn-chrome-tabs@v1.0.1/dist/qn-chrome-tabs.js"
+    ></script>
+    <script type="module">
+      const tabsElement = document.querySelector('#tabs');
+
+      let tabs = [
+        { id: 'home', title: '首页' },
+        { id: 'orders', title: '订单管理' },
+        { id: 'users', title: '用户管理' },
+      ];
+
+      function render() {
+        tabsElement.tabs = tabs;
+      }
+
+      render();
+      tabsElement.activeTabId = 'home';
+
+      tabsElement.addEventListener('tab-activate', (event) => {
+        tabsElement.activeTabId = event.detail.tabId;
+      });
+
+      tabsElement.addEventListener('tab-close', (event) => {
+        tabs = tabs.filter((tab) => tab.id !== event.detail.tabId);
+        render();
+      });
+
+      tabsElement.addEventListener('tab-add', () => {
+        const id = crypto.randomUUID();
+        tabs = [...tabs, { id, title: '新标签' }];
+        render();
+        tabsElement.activeTabId = id;
+      });
+    </script>
+  </body>
+</html>
+```
+
+上面的脚本地址来自本 GitHub 仓库的 `dist` 构建产物，并固定在 `v1.0.1`，
+避免后续版本升级意外影响现有页面。也可以下载
+[`dist/qn-chrome-tabs.js`](./dist/qn-chrome-tabs.js) 放到自己的项目中：
+
+```html
+<script type="module" src="./qn-chrome-tabs.js"></script>
+```
+
+不要直接双击 HTML 文件。ES Module 需要通过 HTTP 访问，可以在文件目录执行：
 
 ```bash
+python3 -m http.server 8080
+```
+
+然后打开 `http://localhost:8080`。
+
+### 方式二：在前端项目中安装
+
+任选项目正在使用的包管理器执行一条命令：
+
+```bash
+npm install qn-chrome-tabs
+# 或
+yarn add qn-chrome-tabs
+# 或
+pnpm add qn-chrome-tabs
+# 或
 bun add qn-chrome-tabs
 ```
 
-本地引用：
-
-```json
-{
-  "dependencies": {
-    "qn-chrome-tabs": "file:../packages/chrome-tabs"
-  }
-}
-```
-
-## 快速开始
+在入口文件中导入一次，浏览器就会注册 `<qn-chrome-tabs>`：
 
 ```ts
+import 'qn-chrome-tabs';
+```
+
+然后创建组件并传入数据：
+
+```js
 import {
   CHROME_TABS_TAG,
   chromeTabsEvents,
-  type ChromeTabEventDetail,
-  type ChromeTabsElement,
 } from 'qn-chrome-tabs';
 
-const element = document.createElement(CHROME_TABS_TAG) as ChromeTabsElement;
+const element = document.createElement(CHROME_TABS_TAG);
 
 element.tabs = [
   { id: 'home', title: '首页' },
@@ -63,16 +143,67 @@ element.groups = [
 element.activeGroupId = 'work';
 
 element.addEventListener(chromeTabsEvents.activate, (event) => {
-  const { tabId } =
-    (event as CustomEvent<ChromeTabEventDetail>).detail;
-  element.activeTabId = tabId;
+  element.activeTabId = event.detail.tabId;
 });
 
 document.body.append(element);
 ```
 
-组件不会自行修改传入数据。收到事件后，使用方需要更新 `tabs`、`groups`、
+组件不会自行修改传入数据。收到事件后，需要更新 `tabs`、`groups`、
 `activeTabId` 或 `activeGroupId` 并重新赋值。
+
+### Vue
+
+Web Component 的 `tabs` 是 JavaScript 属性，不是 HTML 字符串属性，因此通过 `ref`
+赋值最直观：
+
+```vue
+<script setup>
+import { onMounted, ref } from 'vue';
+import 'qn-chrome-tabs';
+
+const tabsRef = ref();
+
+onMounted(() => {
+  tabsRef.value.tabs = [
+    { id: 'home', title: '首页' },
+    { id: 'docs', title: '文档' },
+  ];
+  tabsRef.value.activeTabId = 'home';
+});
+</script>
+
+<template>
+  <qn-chrome-tabs ref="tabsRef" />
+</template>
+```
+
+### React
+
+React 中同样通过 DOM `ref` 设置组件属性：
+
+```tsx
+import { useEffect, useRef } from 'react';
+import 'qn-chrome-tabs';
+
+export function Tabs() {
+  const tabsRef = useRef<HTMLElement & {
+    tabs: Array<{ id: string; title: string }>;
+    activeTabId: string;
+  }>(null);
+
+  useEffect(() => {
+    if (!tabsRef.current) return;
+    tabsRef.current.tabs = [
+      { id: 'home', title: '首页' },
+      { id: 'docs', title: '文档' },
+    ];
+    tabsRef.current.activeTabId = 'home';
+  }, []);
+
+  return <qn-chrome-tabs ref={tabsRef} />;
+}
+```
 
 ## 数据类型
 
@@ -105,6 +236,26 @@ document.body.append(element);
 
 所有事件均为可冒泡、可穿透 Shadow DOM 的 `CustomEvent`。
 
+每个事件都通过 `event.detail` 携带操作数据。例如，点击 ID 为 `home` 的标签时，
+收到的事件可以理解为：
+
+```js
+{
+  type: 'tab-activate',
+  detail: {
+    tabId: 'home',
+  },
+}
+```
+
+因此 JavaScript 中可以直接读取：
+
+```js
+element.addEventListener('tab-activate', (event) => {
+  console.log(event.detail.tabId);
+});
+```
+
 ### 标签事件
 
 | 常量 | 事件名 | detail | 触发时机 |
@@ -128,6 +279,23 @@ document.body.append(element);
 | `addGroup` | `group-add` | 无 |
 | `renameGroup` | `group-rename` | `{ groupId }` |
 | `deleteGroup` | `group-delete` | `{ groupId }` |
+
+### TypeScript 事件类型
+
+TypeScript 默认只把监听器参数识别为普通 `Event`，而普通 `Event` 类型没有
+`detail`。此时可以使用组件导出的数据类型：
+
+```ts
+import type { ChromeTabEventDetail } from 'qn-chrome-tabs';
+
+element.addEventListener('tab-activate', (event) => {
+  const customEvent = event as CustomEvent<ChromeTabEventDetail>;
+  console.log(customEvent.detail.tabId);
+});
+```
+
+`ChromeTabEventDetail` 的结构就是 `{ tabId: string }`。这里的 `as` 只是在告诉
+TypeScript 数据结构，不会在浏览器运行时转换事件。
 
 ## 自定义样式
 
@@ -227,7 +395,14 @@ demo 覆盖标签增删、改名、激活、拖拽、右键批量关闭、分组
 ```bash
 bun run build
 npm pack --dry-run
-npm publish
 ```
 
-构建产物包含 ESM 文件和 TypeScript 类型声明。
+`dist/qn-chrome-tabs.js` 是浏览器可直接加载的 ESM 文件，
+`dist/types/index.d.ts` 是 TypeScript 类型声明。两者都会提交到 Git，
+以便纯 HTML 页面直接引用固定 Git 标签下的构建产物。
+
+推送 `v*` Git 标签后，GitHub Actions 会自动发布对应 npm 版本。
+
+## 开源协议
+
+[MIT](./LICENSE)

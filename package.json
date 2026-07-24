@@ -1,6 +1,6 @@
 {
   "name": "qn-chrome-tabs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "零框架依赖的 Chrome 风格标签栏 Web Component",
   "license": "MIT",
   "keywords": [
