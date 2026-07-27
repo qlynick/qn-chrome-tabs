@@ -163,12 +163,32 @@ shell 与子应用使用以下协议：
 `https://qlynick.github.io/qn-chrome-tabs/`。独立 Demo 不再单独发布；原来的
 “在线 Demo”地址直接进入文档站，交互示例由文档首页内嵌。
 
-工作流将入口页复制为 `404.html`，使 GitHub Pages 在刷新 `/docs/guide` 等
-客户端路由时仍交给文档站处理。`/docs`、`/en/docs` 和 `/ko/docs` 会分别跳转到
-对应语言的使用指南。
+部署涉及三种不同的“基址”，不能混用：
 
-独立运行时，React Router 从 Vite public base 自动取得 `basename`。GitHub Pages
-使用 `/qn-chrome-tabs`，本地开发使用 `/`；返回首页和文档链接不会跳出项目目录。
+| 层级 | 本地开发 | GitHub Pages | qiankun |
+| --- | --- | --- | --- |
+| 子应用 entry | `http://localhost:5175/` | `https://qlynick.github.io/qn-chrome-tabs/` | shell 按环境选择左侧地址 |
+| Vite public base | `/` | 完整 Pages 项目地址 | 用于独立构建 |
+| React Router basename | `/` | `/qn-chrome-tabs` | 使用 Memory Router，不设置 basename |
+| 运行时资源基址 | Vite 开发地址 | Pages 项目地址 | `__INJECTED_PUBLIC_PATH_BY_QIANKUN__` |
+
+GitHub Pages 项目站点挂载在仓库路径 `/qn-chrome-tabs/`，不是用户站点根路径 `/`。
+独立运行时，React Router 从 Vite public base 自动取得 `basename`，因此首页、
+返回首页和文档链接都不会跳到 `https://qlynick.github.io/`。
+
+工作流将入口页复制为 `404.html`，使 GitHub Pages 在刷新
+`/qn-chrome-tabs/docs/guide` 等客户端路由时仍交给文档站处理。GitHub Pages
+返回的 HTTP 状态可能仍是 404，但响应正文是 SPA 入口，浏览器执行后由客户端路由
+渲染正确页面。`/docs`、`/en/docs` 和 `/ko/docs` 会分别跳转到对应语言的使用指南。
+
+常见现象与原因：
+
+| 现象 | 原因 | 处理 |
+| --- | --- | --- |
+| 页面内跳转正常，刷新后显示 GitHub 404 | Pages 没有 SPA 路由回退 | 构建后复制 `index.html` 为 `404.html` |
+| 项目根地址显示“页面不存在” | Browser Router 未设置仓库路径 basename | 从 Vite public base 派生 basename |
+| “返回首页”跳到 `qlynick.github.io/` | `/` 被错误解释为域名根路径 | 使用正确 basename，不手工拼接域名 |
+| JS、搜索索引或 JSON 请求返回 HTML | public base 或 qiankun 资源基址错误 | 统一 entry、分包和运行时资源基址 |
 
 `docs/dist/` 是本地及 CI 构建产物，已加入 `.gitignore`，不提交到 Git。文档内容
 没有变化时，也不会因为重新构建而产生大量待提交文件。
