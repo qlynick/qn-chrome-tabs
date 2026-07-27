@@ -1,0 +1,31 @@
+---
+title: 分组管理
+description: 保存每个分组的标签和激活状态
+---
+
+```js
+let groups = [
+  { id: 'work', name: '工作', activeTabId: 'orders' },
+  { id: 'study', name: '学习', activeTabId: 'docs' },
+];
+
+let tabs = [
+  { id: 'orders', groupId: 'work', title: '订单管理' },
+  { id: 'docs', groupId: 'study', title: '组件文档' },
+];
+
+let activeGroupId = 'work';
+
+function render() {
+  const group = groups.find((item) => item.id === activeGroupId);
+  tabsElement.groups = groups;
+  tabsElement.activeGroupId = activeGroupId;
+  tabsElement.tabs = tabs.filter((tab) => tab.groupId === activeGroupId);
+  tabsElement.activeTabId = group?.activeTabId ?? '';
+}
+
+tabsElement.addEventListener('group-switch', (event) => {
+  activeGroupId = event.detail.groupId;
+  render();
+});
+```

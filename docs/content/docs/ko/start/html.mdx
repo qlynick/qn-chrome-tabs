@@ -1,0 +1,39 @@
+---
+title: 순수 HTML
+description: npm과 빌드 도구 없이 사용합니다
+---
+
+```html
+<qn-chrome-tabs id="tabs"></qn-chrome-tabs>
+
+<script
+  type="module"
+  src="https://cdn.jsdelivr.net/gh/qlynick/qn-chrome-tabs@v1.0.1/dist/qn-chrome-tabs.js"
+></script>
+<script type="module">
+  const tabsElement = document.querySelector('#tabs');
+
+  let tabs = [
+    { id: 'home', title: '홈' },
+    { id: 'orders', title: '주문 관리' },
+  ];
+
+  tabsElement.tabs = tabs;
+  tabsElement.activeTabId = 'home';
+
+  tabsElement.addEventListener('tab-activate', (event) => {
+    tabsElement.activeTabId = event.detail.tabId;
+  });
+
+  tabsElement.addEventListener('tab-close', (event) => {
+    tabs = tabs.filter((tab) => tab.id !== event.detail.tabId);
+    tabsElement.tabs = tabs;
+  });
+</script>
+```
+
+파일을 `file://`로 직접 열지 마세요. 파일 디렉터리에서 로컬 서버를 실행합니다.
+
+```bash
+python3 -m http.server 8080
+```

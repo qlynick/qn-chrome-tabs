@@ -1,4 +1,4 @@
-name: 部署 Demo
+name: 部署 Demo 与文档站
 
 on:
   push:
@@ -30,11 +30,31 @@ jobs:
         with:
           node-version: 22
 
+      - name: 设置 Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.5
+
       - name: 安装依赖
         run: npm install
 
       - name: 构建 Demo
         run: npm run build:demo
+
+      - name: 安装文档站依赖
+        working-directory: docs
+        run: bun install --frozen-lockfile
+
+      - name: 构建文档站
+        working-directory: docs
+        env:
+          DOCS_PUBLIC_BASE: https://qlynick.github.io/qn-chrome-tabs/docs/
+        run: bun run build
+
+      - name: 合并文档站产物
+        run: |
+          mkdir -p demo-dist/docs
+          cp -R docs/dist/. demo-dist/docs/
 
       - name: 配置 GitHub Pages
         uses: actions/configure-pages@v5

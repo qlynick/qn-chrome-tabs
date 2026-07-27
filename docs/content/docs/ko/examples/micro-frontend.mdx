@@ -1,0 +1,31 @@
+---
+title: 마이크로 프론트엔드 탭
+description: iframe 또는 마이크로 앱으로 페이지를 표시합니다
+---
+
+탭에는 컴포넌트가 읽지 않는 애플리케이션 필드를 추가할 수 있습니다.
+
+```js
+{
+  id: 'orders',
+  title: '주문 관리',
+  groupId: 'work',
+  type: 'iframe',
+  url: 'https://example.com/orders',
+  fixed: false,
+}
+```
+
+탭이 활성화되면 해당 페이지를 표시합니다.
+
+```js
+tabsElement.addEventListener('tab-activate', (event) => {
+  const tab = tabs.find((item) => item.id === event.detail.tabId);
+  if (!tab) return;
+
+  tabsElement.activeTabId = tab.id;
+  iframe.src = tab.url;
+});
+```
+
+페이지 상태를 유지하려면 iframe을 반복해서 제거하지 마세요. 탭마다 인스턴스를 유지하고 표시 여부만 전환합니다.

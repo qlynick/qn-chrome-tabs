@@ -2,3 +2,7 @@ node_modules
 demo-dist
 !dist/
 !dist/**
+.source
+docs/.source
+docs/node_modules
+docs/dist/

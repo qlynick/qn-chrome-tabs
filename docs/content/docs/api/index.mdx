@@ -1,0 +1,25 @@
+---
+title: 属性与类型
+description: 组件公开属性和 TypeScript 数据结构
+---
+
+| 属性 | 类型 | 说明 |
+| --- | --- | --- |
+| `tabs` | `ChromeTabItem[]` | 当前分组显示的标签 |
+| `activeTabId` | `string` | 当前激活标签 |
+| `groups` | `ChromeTabGroup[]` | 全部分组 |
+| `activeGroupId` | `string` | 当前分组 |
+| `locale` | `'zh' \| 'en' \| 'ko'` | 界面语言 |
+
+```ts
+interface ChromeTabItem {
+  id: string;
+  title: string;
+  backgroundColor?: string;
+}
+
+interface ChromeTabGroup {
+  id: string;
+  name: string;
+}
+```

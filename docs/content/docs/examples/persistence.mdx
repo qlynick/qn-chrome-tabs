@@ -1,0 +1,24 @@
+---
+title: 本地持久化
+description: 刷新后恢复标签和分组
+---
+
+```js
+const key = 'qn-chrome-tabs-state';
+
+function saveState() {
+  localStorage.setItem(key, JSON.stringify({
+    version: 1,
+    tabs,
+    groups,
+    activeGroupId,
+  }));
+}
+
+function loadState() {
+  const value = localStorage.getItem(key);
+  return value ? JSON.parse(value) : null;
+}
+```
+
+持久化数据应包含版本号，结构变化时执行迁移或清空旧数据。

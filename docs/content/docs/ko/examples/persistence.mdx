@@ -1,0 +1,24 @@
+---
+title: 로컬 영속성
+description: 새로고침 후 탭과 그룹을 복원합니다
+---
+
+```js
+const key = 'qn-chrome-tabs-state';
+
+function saveState() {
+  localStorage.setItem(key, JSON.stringify({
+    version: 1,
+    tabs,
+    groups,
+    activeGroupId,
+  }));
+}
+
+function loadState() {
+  const value = localStorage.getItem(key);
+  return value ? JSON.parse(value) : null;
+}
+```
+
+저장 데이터에 버전 번호를 포함하세요. 구조가 변경되면 이전 데이터를 마이그레이션하거나 삭제합니다.

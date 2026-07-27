@@ -1,0 +1,39 @@
+---
+title: 纯 HTML
+description: 无需 npm 和构建工具
+---
+
+```html
+<qn-chrome-tabs id="tabs"></qn-chrome-tabs>
+
+<script
+  type="module"
+  src="https://cdn.jsdelivr.net/gh/qlynick/qn-chrome-tabs@v1.0.1/dist/qn-chrome-tabs.js"
+></script>
+<script type="module">
+  const tabsElement = document.querySelector('#tabs');
+
+  let tabs = [
+    { id: 'home', title: '首页' },
+    { id: 'orders', title: '订单管理' },
+  ];
+
+  tabsElement.tabs = tabs;
+  tabsElement.activeTabId = 'home';
+
+  tabsElement.addEventListener('tab-activate', (event) => {
+    tabsElement.activeTabId = event.detail.tabId;
+  });
+
+  tabsElement.addEventListener('tab-close', (event) => {
+    tabs = tabs.filter((tab) => tab.id !== event.detail.tabId);
+    tabsElement.tabs = tabs;
+  });
+</script>
+```
+
+不要直接通过 `file://` 双击打开。可以在文件目录运行：
+
+```bash
+python3 -m http.server 8080
+```

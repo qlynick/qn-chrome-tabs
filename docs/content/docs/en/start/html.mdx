@@ -1,0 +1,39 @@
+---
+title: Plain HTML
+description: Use the component without npm or build tools
+---
+
+```html
+<qn-chrome-tabs id="tabs"></qn-chrome-tabs>
+
+<script
+  type="module"
+  src="https://cdn.jsdelivr.net/gh/qlynick/qn-chrome-tabs@v1.0.1/dist/qn-chrome-tabs.js"
+></script>
+<script type="module">
+  const tabsElement = document.querySelector('#tabs');
+
+  let tabs = [
+    { id: 'home', title: 'Home' },
+    { id: 'orders', title: 'Orders' },
+  ];
+
+  tabsElement.tabs = tabs;
+  tabsElement.activeTabId = 'home';
+
+  tabsElement.addEventListener('tab-activate', (event) => {
+    tabsElement.activeTabId = event.detail.tabId;
+  });
+
+  tabsElement.addEventListener('tab-close', (event) => {
+    tabs = tabs.filter((tab) => tab.id !== event.detail.tabId);
+    tabsElement.tabs = tabs;
+  });
+</script>
+```
+
+Do not open the file directly with `file://`. Run a local server in its directory:
+
+```bash
+python3 -m http.server 8080
+```

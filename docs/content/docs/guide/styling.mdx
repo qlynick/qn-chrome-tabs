@@ -1,0 +1,28 @@
+---
+title: 主题与样式
+description: 使用 CSS 变量和 CSS Parts
+---
+
+```css
+qn-chrome-tabs {
+  --chrome-tabs-height: 42px;
+  --chrome-tabs-background: #182230;
+  --chrome-tab-min-width: 56px;
+  --chrome-tab-max-width: 148px;
+  --chrome-tab-radius: 10px;
+  --chrome-tab-text-color: #98a2b3;
+  --chrome-tab-active-text-color: #101828;
+  --chrome-tab-active-background: #f9fafb;
+  --chrome-tabs-accent-color: #7f56d9;
+}
+```
+
+需要修改具体结构时使用公开 Part：
+
+```css
+qn-chrome-tabs::part(active-tab) {
+  font-weight: 600;
+}
+```
+
+不要依赖 Shadow DOM 内部 class，它们不属于公开 API。

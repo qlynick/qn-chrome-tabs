@@ -1,0 +1,23 @@
+---
+title: Getting Started
+description: Choose the integration method that fits your project
+---
+
+Qn Chrome Tabs is a native Web Component with no runtime framework dependency.
+
+| Scenario | Recommended method |
+| --- | --- |
+| A single HTML page without build tools | [Plain HTML](/en/docs/start/html) |
+| A Vite, Webpack, or similar project | [Package installation](/en/docs/start/package) |
+| A Vue or React project | Install the package and set properties through a DOM `ref` |
+
+## Controlled component
+
+The component renders data and emits events. Your application owns the state:
+
+```js
+tabsElement.addEventListener('tab-close', (event) => {
+  tabs = tabs.filter((tab) => tab.id !== event.detail.tabId);
+  tabsElement.tabs = tabs;
+});
+```

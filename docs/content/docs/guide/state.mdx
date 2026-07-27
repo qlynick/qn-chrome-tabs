@@ -1,0 +1,34 @@
+---
+title: 状态管理
+description: 使用受控状态管理标签
+---
+
+```js
+let tabs = [
+  { id: 'home', title: '首页' },
+  { id: 'orders', title: '订单管理' },
+];
+let activeTabId = 'home';
+
+function render() {
+  tabsElement.tabs = tabs;
+  tabsElement.activeTabId = activeTabId;
+}
+
+tabsElement.addEventListener('tab-activate', (event) => {
+  activeTabId = event.detail.tabId;
+  render();
+});
+
+tabsElement.addEventListener('tab-close', (event) => {
+  tabs = tabs.filter((tab) => tab.id !== event.detail.tabId);
+  if (!tabs.some((tab) => tab.id === activeTabId)) {
+    activeTabId = tabs[0]?.id ?? '';
+  }
+  render();
+});
+
+render();
+```
+
+组件不会自动修改数组，重新赋值后才会显示新状态。

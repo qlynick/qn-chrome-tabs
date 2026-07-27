@@ -1,0 +1,29 @@
+---
+title: 事件
+description: 标签和分组的 CustomEvent
+---
+
+事件中的业务数据统一位于 `event.detail`：
+
+```js
+tabsElement.addEventListener('tab-activate', (event) => {
+  console.log(event.detail.tabId);
+});
+```
+
+| 事件名 | detail |
+| --- | --- |
+| `tab-activate` | `{ tabId }` |
+| `tab-edit-address` | `{ tabId }` |
+| `tab-close` | `{ tabId }` |
+| `tab-add` | 无 |
+| `tab-reorder` | `{ tabId, targetTabId, position }` |
+| `tab-close-left` | `{ tabId }` |
+| `tab-close-right` | `{ tabId }` |
+| `tab-close-others` | `{ tabId }` |
+| `group-switch` | `{ groupId }` |
+| `group-add` | 无 |
+| `group-rename` | `{ groupId }` |
+| `group-delete` | `{ groupId }` |
+
+`position` 为 `'before'` 或 `'after'`。

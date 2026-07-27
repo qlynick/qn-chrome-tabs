@@ -1,0 +1,28 @@
+---
+title: Theming and Styling
+description: Customize the component with CSS variables and CSS Parts
+---
+
+```css
+qn-chrome-tabs {
+  --chrome-tabs-height: 42px;
+  --chrome-tabs-background: #182230;
+  --chrome-tab-min-width: 56px;
+  --chrome-tab-max-width: 148px;
+  --chrome-tab-radius: 10px;
+  --chrome-tab-text-color: #98a2b3;
+  --chrome-tab-active-text-color: #101828;
+  --chrome-tab-active-background: #f9fafb;
+  --chrome-tabs-accent-color: #7f56d9;
+}
+```
+
+Use a public Part when you need to style a specific element:
+
+```css
+qn-chrome-tabs::part(active-tab) {
+  font-weight: 600;
+}
+```
+
+Do not depend on classes inside the Shadow DOM; they are not part of the public API.

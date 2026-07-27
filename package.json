@@ -28,6 +28,8 @@
   },
   "scripts": {
     "dev": "vite --config demo/vite.config.ts",
+    "docs:dev": "cd docs && bun run dev",
+    "docs:build": "cd docs && bun run build",
     "build": "vite build && tsc -p tsconfig.json",
     "build:demo": "vite build --config demo/vite.config.ts",
     "prepublishOnly": "npm run build"

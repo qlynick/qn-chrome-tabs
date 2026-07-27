@@ -1,0 +1,25 @@
+---
+title: Properties and Types
+description: Public component properties and TypeScript data structures
+---
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `tabs` | `ChromeTabItem[]` | Tabs displayed in the current group |
+| `activeTabId` | `string` | The active tab |
+| `groups` | `ChromeTabGroup[]` | All groups |
+| `activeGroupId` | `string` | The active group |
+| `locale` | `'zh' \| 'en' \| 'ko'` | Interface language |
+
+```ts
+interface ChromeTabItem {
+  id: string;
+  title: string;
+  backgroundColor?: string;
+}
+
+interface ChromeTabGroup {
+  id: string;
+  name: string;
+}
+```

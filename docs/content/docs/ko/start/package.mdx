@@ -1,0 +1,29 @@
+---
+title: 프로젝트 설치
+description: 패키지 관리자로 컴포넌트를 설치합니다
+---
+
+```bash
+npm install qn-chrome-tabs
+# 또는 yarn add qn-chrome-tabs
+# 또는 pnpm add qn-chrome-tabs
+# 또는 bun add qn-chrome-tabs
+```
+
+애플리케이션 진입점에서 한 번 가져옵니다.
+
+```js
+import 'qn-chrome-tabs';
+```
+
+그다음 DOM 속성으로 복합 데이터를 전달합니다.
+
+```js
+const tabsElement = document.querySelector('qn-chrome-tabs');
+
+tabsElement.tabs = [
+  { id: 'home', title: '홈' },
+  { id: 'docs', title: '컴포넌트 문서' },
+];
+tabsElement.activeTabId = 'home';
+```

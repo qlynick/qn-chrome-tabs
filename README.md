@@ -5,7 +5,8 @@ Vue、React 或其他前端项目中使用。
 
 [在线 Demo](https://qlynick.github.io/qn-chrome-tabs/) ·
 [GitHub](https://github.com/qlynick/qn-chrome-tabs) ·
-[npm](https://www.npmjs.com/package/qn-chrome-tabs)
+[npm](https://www.npmjs.com/package/qn-chrome-tabs) ·
+[文档站开发说明](./docs/README.md)
 
 > Qn Chrome Tabs 负责显示标签和派发操作事件，不会替你保存业务数据。用户点击关闭、
 > 新增或切换标签后，由你的 JavaScript 更新标签数组。这样它可以安全地接入不同项目。
@@ -389,6 +390,18 @@ demo 覆盖标签增删、改名、激活、拖拽、右键批量关闭、分组
 交互式主题编辑器可实时调整公开 CSS 变量及圆角、恢复默认值，并一键复制可直接使用的 CSS。
 内置“海盐蓝”“午夜紫”“樱雾粉”“森屿绿”“琥珀橙”“黑白直角”六套主题，
 可直接点击预览后继续微调。
+
+## 文档站
+
+Fumadocs 文档站位于 `docs/`，与组件代码使用同一仓库和版本历史：
+
+```bash
+bun run docs:dev
+bun run docs:build
+```
+
+首页展示在线 Demo，其他栏目包含快速开始、使用指南、API 和使用案例。
+文档站依赖独立安装在 `docs/`，不会进入组件的 npm 发布包。
 
 ## 构建与发布
 

@@ -1,0 +1,42 @@
+---
+title: Vue 与 React
+description: 在框架中设置 Web Component 属性
+---
+
+## Vue
+
+```vue
+<script setup>
+import { onMounted, ref } from 'vue';
+import 'qn-chrome-tabs';
+
+const tabsRef = ref();
+
+onMounted(() => {
+  tabsRef.value.tabs = [{ id: 'home', title: '首页' }];
+  tabsRef.value.activeTabId = 'home';
+});
+</script>
+
+<template>
+  <qn-chrome-tabs ref="tabsRef" />
+</template>
+```
+
+## React
+
+```tsx
+import { useEffect, useRef } from 'react';
+import 'qn-chrome-tabs';
+
+export function Tabs() {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    ref.current.tabs = [{ id: 'home', title: '首页' }];
+    ref.current.activeTabId = 'home';
+  }, []);
+
+  return <qn-chrome-tabs ref={ref} />;
+}
+```

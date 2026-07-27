@@ -1,0 +1,24 @@
+---
+title: Local Persistence
+description: Restore tabs and groups after a refresh
+---
+
+```js
+const key = 'qn-chrome-tabs-state';
+
+function saveState() {
+  localStorage.setItem(key, JSON.stringify({
+    version: 1,
+    tabs,
+    groups,
+    activeGroupId,
+  }));
+}
+
+function loadState() {
+  const value = localStorage.getItem(key);
+  return value ? JSON.parse(value) : null;
+}
+```
+
+Include a version number in persisted data. Migrate or clear old data when the structure changes.

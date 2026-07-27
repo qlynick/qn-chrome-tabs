@@ -1,0 +1,23 @@
+---
+title: 시작하기
+description: 프로젝트에 적합한 연동 방식을 선택합니다
+---
+
+Qn Chrome Tabs는 런타임 프레임워크 의존성이 없는 네이티브 Web Component입니다.
+
+| 사용 환경 | 권장 방식 |
+| --- | --- |
+| 빌드 도구가 없는 단일 HTML 페이지 | [순수 HTML](/ko/docs/start/html) |
+| Vite, Webpack 등의 프로젝트 | [패키지 설치](/ko/docs/start/package) |
+| Vue 또는 React 프로젝트 | 설치 후 DOM `ref`로 속성 설정 |
+
+## 제어 컴포넌트
+
+컴포넌트는 화면 표시와 이벤트 전달을 담당하고, 애플리케이션이 상태를 갱신합니다.
+
+```js
+tabsElement.addEventListener('tab-close', (event) => {
+  tabs = tabs.filter((tab) => tab.id !== event.detail.tabId);
+  tabsElement.tabs = tabs;
+});
+```

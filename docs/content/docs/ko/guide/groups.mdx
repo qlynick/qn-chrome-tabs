@@ -1,0 +1,31 @@
+---
+title: 그룹 관리
+description: 그룹별 탭과 활성 상태를 저장합니다
+---
+
+```js
+let groups = [
+  { id: 'work', name: '업무', activeTabId: 'orders' },
+  { id: 'study', name: '학습', activeTabId: 'docs' },
+];
+
+let tabs = [
+  { id: 'orders', groupId: 'work', title: '주문 관리' },
+  { id: 'docs', groupId: 'study', title: '컴포넌트 문서' },
+];
+
+let activeGroupId = 'work';
+
+function render() {
+  const group = groups.find((item) => item.id === activeGroupId);
+  tabsElement.groups = groups;
+  tabsElement.activeGroupId = activeGroupId;
+  tabsElement.tabs = tabs.filter((tab) => tab.groupId === activeGroupId);
+  tabsElement.activeTabId = group?.activeTabId ?? '';
+}
+
+tabsElement.addEventListener('group-switch', (event) => {
+  activeGroupId = event.detail.groupId;
+  render();
+});
+```

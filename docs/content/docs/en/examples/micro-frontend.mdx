@@ -1,0 +1,31 @@
+---
+title: Micro-frontend Tabs
+description: Host pages with iframes or micro applications
+---
+
+Tabs can include application fields that the component does not read:
+
+```js
+{
+  id: 'orders',
+  title: 'Orders',
+  groupId: 'work',
+  type: 'iframe',
+  url: 'https://example.com/orders',
+  fixed: false,
+}
+```
+
+Show the matching page when a tab becomes active:
+
+```js
+tabsElement.addEventListener('tab-activate', (event) => {
+  const tab = tabs.find((item) => item.id === event.detail.tabId);
+  if (!tab) return;
+
+  tabsElement.activeTabId = tab.id;
+  iframe.src = tab.url;
+});
+```
+
+To preserve page state, keep one iframe instance per tab and toggle visibility instead of repeatedly destroying it.

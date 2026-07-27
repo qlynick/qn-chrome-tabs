@@ -1,0 +1,29 @@
+---
+title: 工程项目
+description: 通过包管理器安装组件
+---
+
+```bash
+npm install qn-chrome-tabs
+# 或 yarn add qn-chrome-tabs
+# 或 pnpm add qn-chrome-tabs
+# 或 bun add qn-chrome-tabs
+```
+
+在应用入口导入一次：
+
+```js
+import 'qn-chrome-tabs';
+```
+
+然后通过 DOM 属性传入复杂数据：
+
+```js
+const tabsElement = document.querySelector('qn-chrome-tabs');
+
+tabsElement.tabs = [
+  { id: 'home', title: '首页' },
+  { id: 'docs', title: '组件文档' },
+];
+tabsElement.activeTabId = 'home';
+```

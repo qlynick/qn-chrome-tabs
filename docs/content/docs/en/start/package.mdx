@@ -1,0 +1,29 @@
+---
+title: Project Setup
+description: Install the component with a package manager
+---
+
+```bash
+npm install qn-chrome-tabs
+# or yarn add qn-chrome-tabs
+# or pnpm add qn-chrome-tabs
+# or bun add qn-chrome-tabs
+```
+
+Import it once from your application entry:
+
+```js
+import 'qn-chrome-tabs';
+```
+
+Then pass complex data through DOM properties:
+
+```js
+const tabsElement = document.querySelector('qn-chrome-tabs');
+
+tabsElement.tabs = [
+  { id: 'home', title: 'Home' },
+  { id: 'docs', title: 'Component Docs' },
+];
+tabsElement.activeTabId = 'home';
+```

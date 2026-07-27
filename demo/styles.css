@@ -12,6 +12,19 @@ body {
   margin: 0;
 }
 
+.docs-embedded-demo header {
+  display: none;
+}
+
+.docs-embedded-demo {
+  overflow: hidden;
+}
+
+.docs-embedded-demo main {
+  margin-top: 24px;
+  margin-bottom: 24px;
+}
+
 main {
   width: min(1380px, calc(100% - 32px));
   margin: 56px auto;

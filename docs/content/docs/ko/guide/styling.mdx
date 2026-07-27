@@ -1,0 +1,28 @@
+---
+title: 테마와 스타일
+description: CSS 변수와 CSS Parts를 사용합니다
+---
+
+```css
+qn-chrome-tabs {
+  --chrome-tabs-height: 42px;
+  --chrome-tabs-background: #182230;
+  --chrome-tab-min-width: 56px;
+  --chrome-tab-max-width: 148px;
+  --chrome-tab-radius: 10px;
+  --chrome-tab-text-color: #98a2b3;
+  --chrome-tab-active-text-color: #101828;
+  --chrome-tab-active-background: #f9fafb;
+  --chrome-tabs-accent-color: #7f56d9;
+}
+```
+
+특정 구조의 스타일을 변경하려면 공개 Part를 사용합니다.
+
+```css
+qn-chrome-tabs::part(active-tab) {
+  font-weight: 600;
+}
+```
+
+Shadow DOM 내부 클래스는 공개 API가 아니므로 의존하지 마세요.

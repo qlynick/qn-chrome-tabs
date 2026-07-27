@@ -1,0 +1,31 @@
+---
+title: 微前端标签页
+description: 使用 iframe 或子应用承载页面
+---
+
+标签可以增加组件不读取的业务字段：
+
+```js
+{
+  id: 'orders',
+  title: '订单管理',
+  groupId: 'work',
+  type: 'iframe',
+  url: 'https://example.com/orders',
+  fixed: false,
+}
+```
+
+切换标签时显示对应页面：
+
+```js
+tabsElement.addEventListener('tab-activate', (event) => {
+  const tab = tabs.find((item) => item.id === event.detail.tabId);
+  if (!tab) return;
+
+  tabsElement.activeTabId = tab.id;
+  iframe.src = tab.url;
+});
+```
+
+需要保留页面状态时，不要反复销毁 iframe；为每个标签保留实例，只切换可见性。

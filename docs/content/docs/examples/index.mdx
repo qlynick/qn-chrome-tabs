@@ -1,0 +1,23 @@
+---
+title: 常用操作
+description: 使用脚本控制标签
+---
+
+## 新增并激活
+
+```js
+const id = crypto.randomUUID();
+tabs = [...tabs, { id, title: '新标签' }];
+tabsElement.tabs = tabs;
+tabsElement.activeTabId = id;
+```
+
+## 关闭所有右侧
+
+```js
+tabsElement.addEventListener('tab-close-right', (event) => {
+  const index = tabs.findIndex((tab) => tab.id === event.detail.tabId);
+  tabs = tabs.slice(0, index + 1);
+  tabsElement.tabs = tabs;
+});
+```

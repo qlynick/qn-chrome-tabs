@@ -1,0 +1,29 @@
+---
+title: 이벤트
+description: 탭과 그룹의 CustomEvent
+---
+
+애플리케이션 데이터는 항상 `event.detail`에 있습니다.
+
+```js
+tabsElement.addEventListener('tab-activate', (event) => {
+  console.log(event.detail.tabId);
+});
+```
+
+| 이벤트 | detail |
+| --- | --- |
+| `tab-activate` | `{ tabId }` |
+| `tab-edit-address` | `{ tabId }` |
+| `tab-close` | `{ tabId }` |
+| `tab-add` | 없음 |
+| `tab-reorder` | `{ tabId, targetTabId, position }` |
+| `tab-close-left` | `{ tabId }` |
+| `tab-close-right` | `{ tabId }` |
+| `tab-close-others` | `{ tabId }` |
+| `group-switch` | `{ groupId }` |
+| `group-add` | 없음 |
+| `group-rename` | `{ groupId }` |
+| `group-delete` | `{ groupId }` |
+
+`position` 값은 `'before'` 또는 `'after'`입니다.

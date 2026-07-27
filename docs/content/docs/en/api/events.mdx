@@ -1,0 +1,29 @@
+---
+title: Events
+description: CustomEvents for tabs and groups
+---
+
+Application data is always available from `event.detail`:
+
+```js
+tabsElement.addEventListener('tab-activate', (event) => {
+  console.log(event.detail.tabId);
+});
+```
+
+| Event | detail |
+| --- | --- |
+| `tab-activate` | `{ tabId }` |
+| `tab-edit-address` | `{ tabId }` |
+| `tab-close` | `{ tabId }` |
+| `tab-add` | None |
+| `tab-reorder` | `{ tabId, targetTabId, position }` |
+| `tab-close-left` | `{ tabId }` |
+| `tab-close-right` | `{ tabId }` |
+| `tab-close-others` | `{ tabId }` |
+| `group-switch` | `{ groupId }` |
+| `group-add` | None |
+| `group-rename` | `{ groupId }` |
+| `group-delete` | `{ groupId }` |
+
+`position` is either `'before'` or `'after'`.

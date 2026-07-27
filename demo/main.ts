@@ -47,6 +47,8 @@ const translations: Record<'en' | 'ko', Record<string, string>> = {
     '事件日志': 'Event log',
     '快速上手': 'Quick start',
     '纯 HTML 可直接引用 Git 构建产物，也可通过包管理器安装。': 'Use the Git build directly in plain HTML, or install it with a package manager.',
+    '纯 HTML（无需安装）': 'Plain HTML (no installation)',
+    '首页': 'Home', '文档': 'Docs',
     '工作': 'Work', '学习': 'Study',
     '仪表盘': 'Dashboard', '订单中心': 'Orders', '客户管理': 'Customers',
     '数据报表': 'Reports', '系统设置': 'Settings', '组件文档': 'Component docs',
@@ -104,6 +106,8 @@ const translations: Record<'en' | 'ko', Record<string, string>> = {
     '当前状态': '현재 상태', '事件日志': '이벤트 로그',
     '快速上手': '빠른 시작',
     '纯 HTML 可直接引用 Git 构建产物，也可通过包管理器安装。': '일반 HTML에서는 Git 빌드를 직접 사용하거나 패키지 관리자로 설치할 수 있습니다.',
+    '纯 HTML（无需安装）': '순수 HTML (설치 불필요)',
+    '首页': '홈', '文档': '문서',
     '工作': '업무', '学习': '학습',
     '仪表盘': '대시보드', '订单中心': '주문 센터', '客户管理': '고객 관리',
     '数据报表': '데이터 보고서', '系统设置': '시스템 설정', '组件文档': '컴포넌트 문서',
@@ -146,6 +150,13 @@ const translations: Record<'en' | 'ko', Record<string, string>> = {
 };
 
 function detectLocale(): ChromeTabsLocale {
+  const requestedLocale = new URLSearchParams(window.location.search)
+    .get('locale');
+  if (requestedLocale === 'en' || requestedLocale === 'ko') {
+    return requestedLocale;
+  }
+  if (requestedLocale === 'zh') return 'zh';
+
   const language = navigator.language.toLowerCase();
   if (language.startsWith('en')) return 'en';
   if (language.startsWith('ko')) return 'ko';
@@ -792,6 +803,17 @@ function applyLocale(nextLocale: ChromeTabsLocale) {
   for (const element of document.querySelectorAll<HTMLElement>('[data-zh]')) {
     element.textContent = t(element.dataset.zh!);
   }
+  for (
+    const code of document.querySelectorAll<HTMLElement>(
+      '.usage-code code',
+    )
+  ) {
+    const source = code.dataset.source ?? code.textContent ?? '';
+    code.dataset.source = source;
+    code.textContent = source
+      .replaceAll("'首页'", `'${t('首页')}'`)
+      .replaceAll("'文档'", `'${t('文档')}'`);
+  }
   for (const item of eventLog.querySelectorAll<HTMLElement>('[data-log-name]')) {
     item.textContent = item.dataset.logDetail
       ? `${t(item.dataset.logName!)} ${item.dataset.logDetail}`
@@ -803,6 +825,39 @@ function applyLocale(nextLocale: ChromeTabsLocale) {
 
 languageSelect.addEventListener('change', () => {
   applyLocale(languageSelect.value as ChromeTabsLocale);
+});
+
+window.addEventListener('message', (event) => {
+  if (event.source !== window.parent) return;
+  const message = event.data as {
+    type?: string;
+    locale?: ChromeTabsLocale;
+  };
+  if (
+    message.type === 'qn-chrome-tabs-locale'
+    && ['zh', 'en', 'ko'].includes(message.locale ?? '')
+  ) {
+    applyLocale(message.locale!);
+  }
+});
+
+window.addEventListener('keydown', (event) => {
+  if (
+    window.parent === window
+    || !(event.metaKey || event.ctrlKey)
+    || event.key.toLowerCase() !== 'k'
+  ) {
+    return;
+  }
+
+  event.preventDefault();
+  const parentOrigin = document.referrer
+    ? new URL(document.referrer).origin
+    : window.location.origin;
+  window.parent.postMessage(
+    { type: 'qn-chrome-tabs-open-search' },
+    parentOrigin,
+  );
 });
 
 updateThemeCode();

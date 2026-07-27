@@ -1,0 +1,23 @@
+---
+title: Common Operations
+description: Control tabs with JavaScript
+---
+
+## Add and activate a tab
+
+```js
+const id = crypto.randomUUID();
+tabs = [...tabs, { id, title: 'New Tab' }];
+tabsElement.tabs = tabs;
+tabsElement.activeTabId = id;
+```
+
+## Close all tabs to the right
+
+```js
+tabsElement.addEventListener('tab-close-right', (event) => {
+  const index = tabs.findIndex((tab) => tab.id === event.detail.tabId);
+  tabs = tabs.slice(0, index + 1);
+  tabsElement.tabs = tabs;
+});
+```

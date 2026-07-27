@@ -1,0 +1,23 @@
+---
+title: 开始使用
+description: 选择适合当前项目的接入方式
+---
+
+Qn Chrome Tabs 是原生 Web Component，没有运行时框架依赖。
+
+| 场景 | 推荐方式 |
+| --- | --- |
+| 单个 HTML 页面、无构建工具 | [纯 HTML](/docs/start/html) |
+| Vite、Webpack 等工程项目 | [包管理器安装](/docs/start/package) |
+| Vue、React 项目 | 安装后通过 DOM `ref` 设置属性 |
+
+## 受控组件
+
+组件只负责展示和派发事件，应用负责更新数据：
+
+```js
+tabsElement.addEventListener('tab-close', (event) => {
+  tabs = tabs.filter((tab) => tab.id !== event.detail.tabId);
+  tabsElement.tabs = tabs;
+});
+```

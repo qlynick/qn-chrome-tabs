@@ -1,0 +1,31 @@
+---
+title: Group Management
+description: Preserve tabs and active state for each group
+---
+
+```js
+let groups = [
+  { id: 'work', name: 'Work', activeTabId: 'orders' },
+  { id: 'study', name: 'Study', activeTabId: 'docs' },
+];
+
+let tabs = [
+  { id: 'orders', groupId: 'work', title: 'Orders' },
+  { id: 'docs', groupId: 'study', title: 'Component Docs' },
+];
+
+let activeGroupId = 'work';
+
+function render() {
+  const group = groups.find((item) => item.id === activeGroupId);
+  tabsElement.groups = groups;
+  tabsElement.activeGroupId = activeGroupId;
+  tabsElement.tabs = tabs.filter((tab) => tab.groupId === activeGroupId);
+  tabsElement.activeTabId = group?.activeTabId ?? '';
+}
+
+tabsElement.addEventListener('group-switch', (event) => {
+  activeGroupId = event.detail.groupId;
+  render();
+});
+```

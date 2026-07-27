@@ -1,0 +1,23 @@
+---
+title: 자주 쓰는 작업
+description: JavaScript로 탭을 제어합니다
+---
+
+## 탭 추가 및 활성화
+
+```js
+const id = crypto.randomUUID();
+tabs = [...tabs, { id, title: '새 탭' }];
+tabsElement.tabs = tabs;
+tabsElement.activeTabId = id;
+```
+
+## 오른쪽 탭 모두 닫기
+
+```js
+tabsElement.addEventListener('tab-close-right', (event) => {
+  const index = tabs.findIndex((tab) => tab.id === event.detail.tabId);
+  tabs = tabs.slice(0, index + 1);
+  tabsElement.tabs = tabs;
+});
+```

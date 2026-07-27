@@ -1,0 +1,42 @@
+---
+title: Vue와 React
+description: 프레임워크에서 Web Component 속성을 설정합니다
+---
+
+## Vue
+
+```vue
+<script setup>
+import { onMounted, ref } from 'vue';
+import 'qn-chrome-tabs';
+
+const tabsRef = ref();
+
+onMounted(() => {
+  tabsRef.value.tabs = [{ id: 'home', title: '홈' }];
+  tabsRef.value.activeTabId = 'home';
+});
+</script>
+
+<template>
+  <qn-chrome-tabs ref="tabsRef" />
+</template>
+```
+
+## React
+
+```tsx
+import { useEffect, useRef } from 'react';
+import 'qn-chrome-tabs';
+
+export function Tabs() {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    ref.current.tabs = [{ id: 'home', title: '홈' }];
+    ref.current.activeTabId = 'home';
+  }, []);
+
+  return <qn-chrome-tabs ref={ref} />;
+}
+```
