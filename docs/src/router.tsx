@@ -75,10 +75,17 @@ function normalizeDocsPath(path: string) {
     : path;
 }
 
+function getBrowserBasename() {
+  const pathname = new URL(import.meta.env.BASE_URL, window.location.origin)
+    .pathname.replace(/\/$/, '');
+
+  return pathname || '/';
+}
+
 export function createDocsRouter(embedded: boolean, initialPath = '/') {
   const normalizedPath = normalizeDocsPath(initialPath);
 
   return embedded
     ? createMemoryRouter(routes, { initialEntries: [normalizedPath] })
-    : createBrowserRouter(routes);
+    : createBrowserRouter(routes, { basename: getBrowserBasename() });
 }

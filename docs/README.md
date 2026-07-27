@@ -167,6 +167,9 @@ shell 与子应用使用以下协议：
 客户端路由时仍交给文档站处理。`/docs`、`/en/docs` 和 `/ko/docs` 会分别跳转到
 对应语言的使用指南。
 
+独立运行时，React Router 从 Vite public base 自动取得 `basename`。GitHub Pages
+使用 `/qn-chrome-tabs`，本地开发使用 `/`；返回首页和文档链接不会跳出项目目录。
+
 `docs/dist/` 是本地及 CI 构建产物，已加入 `.gitignore`，不提交到 Git。文档内容
 没有变化时，也不会因为重新构建而产生大量待提交文件。
 
