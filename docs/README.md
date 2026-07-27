@@ -136,7 +136,7 @@ Demo 启动时优先读取查询参数，确保独立运行、qiankun 和 CDN �
 
 - qiankun 应用名：`chrome-tabs-docs`
 - shell `entry`：`http://localhost:5175/`
-- shell 生产 `entry`：`https://qlynick.github.io/qn-chrome-tabs/docs/`
+- shell 生产 `entry`：`https://qlynick.github.io/qn-chrome-tabs/`
 - shell 初始 `path`：`/`
 - 生命周期入口：`src/main.tsx`
 - shell 配置：`micro-portal/shell/src/nav-config.ts`
@@ -159,11 +159,9 @@ shell 与子应用使用以下协议：
 
 ## 自动构建与发布
 
-推送 `main` 后，`.github/workflows/deploy-demo.yml` 自动构建 Demo 和文档站，
-并将它们合并发布到 GitHub Pages：
-
-- Demo：`https://qlynick.github.io/qn-chrome-tabs/`
-- 文档站：`https://qlynick.github.io/qn-chrome-tabs/docs/`
+推送 `main` 后，`.github/workflows/deploy-docs.yml` 自动构建文档站并发布到
+`https://qlynick.github.io/qn-chrome-tabs/`。独立 Demo 不再单独发布；原来的
+“在线 Demo”地址直接进入文档站，交互示例由文档首页内嵌。
 
 `docs/dist/` 是本地及 CI 构建产物，已加入 `.gitignore`，不提交到 Git。文档内容
 没有变化时，也不会因为重新构建而产生大量待提交文件。

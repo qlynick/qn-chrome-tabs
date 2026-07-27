@@ -238,7 +238,7 @@ export default defineConfig(async ({ command }) => {
     base: isDev
       ? '/'
       : process.env.DOCS_PUBLIC_BASE
-        ?? 'https://qlynick.github.io/qn-chrome-tabs/docs/',
+        ?? 'https://qlynick.github.io/qn-chrome-tabs/',
     plugins: [
       mdx(),
       docsManifest(initialManifest),
