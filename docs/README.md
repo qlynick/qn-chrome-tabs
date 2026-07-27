@@ -163,6 +163,10 @@ shell 与子应用使用以下协议：
 `https://qlynick.github.io/qn-chrome-tabs/`。独立 Demo 不再单独发布；原来的
 “在线 Demo”地址直接进入文档站，交互示例由文档首页内嵌。
 
+工作流将入口页复制为 `404.html`，使 GitHub Pages 在刷新 `/docs/guide` 等
+客户端路由时仍交给文档站处理。`/docs`、`/en/docs` 和 `/ko/docs` 会分别跳转到
+对应语言的使用指南。
+
 `docs/dist/` 是本地及 CI 构建产物，已加入 `.gitignore`，不提交到 Git。文档内容
 没有变化时，也不会因为重新构建而产生大量待提交文件。
 

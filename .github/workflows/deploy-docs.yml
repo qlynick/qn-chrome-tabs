@@ -40,6 +40,9 @@ jobs:
           DOCS_PUBLIC_BASE: https://qlynick.github.io/qn-chrome-tabs/
         run: bun run build
 
+      - name: 配置单页应用回退
+        run: cp docs/dist/index.html docs/dist/404.html
+
       - name: 配置 GitHub Pages
         uses: actions/configure-pages@v5
 

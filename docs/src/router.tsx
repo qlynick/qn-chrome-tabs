@@ -2,6 +2,7 @@ import { RootProvider } from 'fumadocs-ui/provider/react-router';
 import {
   createBrowserRouter,
   createMemoryRouter,
+  Navigate,
   Outlet,
   type RouteObject,
   useLocation,
@@ -55,10 +56,13 @@ const routes: RouteObject[] = [
     errorElement: <RouteError />,
     children: [
       { index: true, element: <Home /> },
+      { path: 'docs', element: <Navigate to="/docs/guide" replace /> },
       { path: 'docs/*', loader: zhDocsLoader, element: <DocsRoute /> },
       { path: 'en', element: <Home locale="en" /> },
+      { path: 'en/docs', element: <Navigate to="/en/docs/guide" replace /> },
       { path: 'en/docs/*', loader: enDocsLoader, element: <DocsRoute /> },
       { path: 'ko', element: <Home locale="ko" /> },
+      { path: 'ko/docs', element: <Navigate to="/ko/docs/guide" replace /> },
       { path: 'ko/docs/*', loader: koDocsLoader, element: <DocsRoute /> },
       { path: '*', element: <NotFound /> },
     ],
