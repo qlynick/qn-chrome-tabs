@@ -48,7 +48,7 @@ Vue、React 或其他前端项目中使用。
 
     <script
       type="module"
-      src="https://cdn.jsdelivr.net/gh/qlynick/qn-chrome-tabs@v1.0.1/dist/qn-chrome-tabs.js"
+      src="https://cdn.jsdelivr.net/npm/qn-chrome-tabs@latest/dist/qn-chrome-tabs.js"
     ></script>
     <script type="module">
       const tabsElement = document.querySelector('#tabs');
@@ -86,8 +86,8 @@ Vue、React 或其他前端项目中使用。
 </html>
 ```
 
-上面的脚本地址来自本 GitHub 仓库的 `dist` 构建产物，并固定在 `v1.0.1`，
-避免后续版本升级意外影响现有页面。也可以下载
+上面的脚本地址始终使用 npm 上的最新稳定版本。生产项目需要避免后续升级影响时，
+建议将 `latest` 替换为明确的版本号。也可以下载
 [`dist/qn-chrome-tabs.js`](./dist/qn-chrome-tabs.js) 放到自己的项目中：
 
 ```html
