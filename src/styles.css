@@ -8,7 +8,7 @@
   --chrome-tabs-height: 38px;
   --chrome-tabs-background: #dee1e6;
   --chrome-tabs-font: 12px Arial, sans-serif;
-  --chrome-tab-height: min(var(--chrome-tabs-height), 38px);
+  --chrome-tab-height: max(var(--chrome-tabs-height), 28px);
   --chrome-tab-min-width: 52px;
   --chrome-tab-max-width: 120px;
   --chrome-tab-radius: 8px;
@@ -16,7 +16,7 @@
   --chrome-tab-active-text-color: #202124;
   --chrome-tab-hover-background: #f4f5f6;
   --chrome-tab-active-background: #fff;
-  --chrome-tab-divider-color: #a9adb0;
+  --chrome-tab-divider-color: #aeb5c64f;
   --chrome-tab-close-hover-background: #dadce0;
   --chrome-tabs-accent-color: #1a73e8;
   --chrome-tabs-menu-background: #fff;
@@ -211,8 +211,8 @@
 }
 
 .chrome-tab[data-active] .chrome-tab-background {
-  inset: 4px 0 0;
-  border-radius: var(--chrome-tab-radius) var(--chrome-tab-radius) 0 0;
+  inset: 4px 2px 0;
+  border-radius: calc(var(--chrome-tab-radius) + 2px) calc(var(--chrome-tab-radius) + 2px) 0 0;
   background: var(--chrome-tab-active-background);
 }
 
@@ -221,19 +221,19 @@
   content: '';
   position: absolute;
   bottom: 0;
-  width: var(--chrome-tab-radius);
-  height: var(--chrome-tab-radius);
+  width: calc(var(--chrome-tab-radius) + 2px);
+  height: calc(var(--chrome-tab-radius) + 2px);
 }
 
 .chrome-tab[data-active] .chrome-tab-background::before {
-  left: calc(-1 * var(--chrome-tab-radius));
-  border-bottom-right-radius: var(--chrome-tab-radius);
+  left: calc(-1 * (var(--chrome-tab-radius) + 2px));
+  border-bottom-right-radius: calc(var(--chrome-tab-radius) + 2px);
   box-shadow: 4px 4px 0 4px currentColor;
 }
 
 .chrome-tab[data-active] .chrome-tab-background::after {
-  right: calc(-1 * var(--chrome-tab-radius));
-  border-bottom-left-radius: var(--chrome-tab-radius);
+  right: calc(-1 * (var(--chrome-tab-radius) + 2px));
+  border-bottom-left-radius: calc(var(--chrome-tab-radius) + 2px);
   box-shadow: -4px 4px 0 4px currentColor;
 }
 
