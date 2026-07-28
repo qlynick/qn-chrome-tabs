@@ -1,0 +1,49 @@
+name: Feature request / 功能建议 / 기능 제안
+description: Suggest an in-scope improvement / 提出符合组件边界的改进 / 컴포넌트 범위에 맞는 개선 제안
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Qn Chrome Tabs focuses on tab-bar rendering and interaction events. Routing, page rendering, persistence, and business state remain application responsibilities.
+
+        Qn Chrome Tabs 专注于标签栏渲染和交互事件；路由、页面渲染、持久化和业务状态由应用负责。
+
+        Qn Chrome Tabs는 탭 표시줄 렌더링과 상호작용 이벤트에 집중합니다. 라우팅, 페이지 렌더링, 영속성 및 비즈니스 상태는 애플리케이션이 담당합니다.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / 问题 / 문제
+      description: What user or integration problem would this solve? / 它要解决什么用户或集成问题？ / 어떤 사용자 또는 통합 문제를 해결하나요?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior / 建议行为 / 제안 동작
+      description: Describe the expected public API and visible behavior / 描述期望的公开 API 和可见行为 / 기대하는 공개 API와 화면 동작을 설명해 주세요
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example use case / 使用示例 / 사용 예시
+      description: Show how an application would use it / 说明应用将如何使用它 / 애플리케이션에서 어떻게 사용할지 보여 주세요
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered / 考虑过的替代方案 / 검토한 대안
+      description: Describe workarounds or simpler options considered / 描述考虑过的变通或更简单方案 / 검토한 우회 방법이나 더 간단한 대안을 설명해 주세요
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting / 提交之前 / 제출 전 확인
+      options:
+        - label: I searched existing issues. / 我已搜索现有 Issue。 / 기존 Issue를 검색했습니다.
+          required: true
+        - label: This belongs in a tab-bar component, not application code. / 该需求属于标签栏组件而非应用代码。 / 이 요청은 애플리케이션 코드가 아닌 탭 표시줄 컴포넌트의 범위에 해당합니다.
+          required: true

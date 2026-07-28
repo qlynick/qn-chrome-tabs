@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://qlynick.github.io/qn-chrome-tabs/en/docs/
+    about: Check the guides and API reference before opening an issue.
+  - name: Report a security vulnerability
+    url: https://github.com/qlynick/qn-chrome-tabs/security/advisories/new
+    about: Report suspected vulnerabilities privately instead of opening a public issue.

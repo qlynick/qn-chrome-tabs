@@ -5,8 +5,13 @@
   "license": "MIT",
   "keywords": [
     "web-component",
+    "custom-element",
     "tabs",
+    "tab-bar",
+    "workspace-tabs",
     "chrome-tabs",
+    "drag-and-drop",
+    "admin-dashboard",
     "framework-agnostic",
     "micro-frontend"
   ],
