@@ -10,13 +10,31 @@ description: 组件公开属性和 TypeScript 数据结构
 | `groups` | `ChromeTabGroup[]` | 全部分组 |
 | `activeGroupId` | `string` | 当前分组 |
 | `locale` | `'zh' \| 'en' \| 'ko'` | 界面语言 |
+| `hideAddButton` | `boolean` | 是否隐藏新增标签按钮 |
+| `hideGroupButton` | `boolean` | 是否隐藏分组下拉入口 |
+| `tabTooltipMode` | `'truncated' \| 'always' \| 'never'` | 仅标题被裁剪时显示、全部显示或全部关闭标签提示 |
+| `renderTabIcon` | `(tab: ChromeTabItem) => Node \| null` | 自定义图标渲染；返回 `null` 时回退到 `tab.icon` |
+| `renderTabTooltip` | `(tab: ChromeTabItem) => Node \| string \| null` | 自定义标签提示内容；返回 `null` 可禁用当前标签的提示 |
+
+```ts
+tabsElement.renderTabTooltip = (tab) => {
+  const content = document.createElement('div');
+  content.textContent = tab.title;
+  return content;
+};
+```
 
 ```ts
 interface ChromeTabItem {
   id: string;
   title: string;
   backgroundColor?: string;
+  icon?: ChromeTabIcon;
 }
+
+type ChromeTabIcon =
+  | { type: 'image'; src: string; alt?: string }
+  | { type: 'favicon'; url: string; path?: string; alt?: string };
 
 interface ChromeTabGroup {
   id: string;

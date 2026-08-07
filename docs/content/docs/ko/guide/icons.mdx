@@ -1,0 +1,62 @@
+---
+title: 탭 아이콘
+description: 이미지, 파비콘 및 사용자 지정 탭 아이콘을 설정합니다
+---
+
+## 이미지 아이콘
+
+`image` 타입으로 SVG, PNG, GIF, APNG, WebP 등 브라우저가 지원하는 이미지 형식을 표시할 수 있습니다:
+
+```js
+tabsElement.tabs = [
+  {
+    id: 'home',
+    title: '홈',
+    icon: { type: 'image', src: '/icons/home.svg', alt: '홈' },
+  },
+];
+```
+
+## 웹사이트 파비콘
+
+`favicon` 타입을 사용하면 기본적으로 웹사이트의 동일 출처 루트 경로에 있는 `/favicon.ico`를 불러옵니다:
+
+```js
+tabsElement.tabs = [
+  {
+    id: 'github',
+    title: 'GitHub',
+    icon: { type: 'favicon', url: 'https://github.com/qlynick' },
+  },
+];
+```
+
+다른 경로나 형식의 파비콘을 사용하는 경우 `path`로 지정합니다:
+
+```js
+tabsElement.tabs = [
+  {
+    id: 'github',
+    title: 'GitHub',
+    icon: {
+      type: 'favicon',
+      url: 'https://github.com',
+      path: '/fluidicon.png',
+    },
+  },
+];
+```
+
+## 사용자 지정 아이콘
+
+`renderTabIcon`은 모든 DOM 노드를 반환할 수 있습니다. `null`을 반환하면 해당 탭의 `icon` 설정을 사용합니다:
+
+```js
+tabsElement.renderTabIcon = (tab) => {
+  if (tab.id !== 'favorite') return null;
+
+  const icon = document.createElement('span');
+  icon.textContent = '★';
+  return icon;
+};
+```

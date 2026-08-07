@@ -596,6 +596,29 @@ pre {
   line-height: 1.7;
 }
 
+.icon-examples {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+  padding: 24px;
+  border: 1px solid #d0d5dd;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.icon-demo-preview {
+  overflow: hidden;
+  border: 1px solid #d0d5dd;
+  border-radius: 10px;
+}
+
+.icon-examples .usage-code {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  white-space: pre;
+}
+
 @media (max-width: 1050px) {
   header {
     align-items: start;

@@ -1,0 +1,20 @@
+---
+title: Add Button
+description: Handle new-tab events and control button visibility
+---
+
+The component emits `tab-add` when the user clicks the add button. Create the tab in your application, then assign `tabs` again:
+
+```js
+tabsElement.addEventListener('tab-add', () => {
+  const tab = { id: crypto.randomUUID(), title: 'New tab' };
+  tabsElement.tabs = [...tabsElement.tabs, tab];
+  tabsElement.activeTabId = tab.id;
+});
+```
+
+Hide the button when users should not add tabs. It is visible by default:
+
+```js
+tabsElement.hideAddButton = true;
+```

@@ -110,7 +110,12 @@ const element = document.createElement(CHROME_TABS_TAG);
 
 element.tabs = [
   { id: 'home', title: 'Home' },
-  { id: 'docs', title: 'Docs', backgroundColor: '#f8fafc' },
+  {
+    id: 'docs',
+    title: 'Docs',
+    backgroundColor: '#f8fafc',
+    icon: { type: 'favicon', url: 'https://example.com/docs' },
+  },
 ];
 element.activeTabId = 'home';
 element.groups = [
@@ -133,6 +138,19 @@ document.body.append(element);
 | `groups` | `ChromeTabGroup[]` | Available groups |
 | `activeGroupId` | `string` | Active group ID |
 | `locale` | `'zh' \| 'en' \| 'ko'` | UI locale; detected from the browser when omitted |
+| `hideAddButton` | `boolean` | Whether to hide the add-tab button |
+| `hideGroupButton` | `boolean` | Whether to hide the group menu trigger |
+| `tabTooltipMode` | `'truncated' \| 'always' \| 'never'` | Show tooltips for truncated titles, all tabs, or no tabs |
+| `renderTabIcon` | `(tab: ChromeTabItem) => Node \| null` | Custom icon renderer; `null` falls back to `tab.icon` |
+| `renderTabTooltip` | `(tab: ChromeTabItem) => Node \| string \| null` | Custom tab tooltip content; return `null` to disable it for that tab |
+
+```ts
+element.renderTabTooltip = (tab) => {
+  const content = document.createElement('div');
+  content.textContent = tab.title;
+  return content;
+};
+```
 
 ## Events
 

@@ -26,6 +26,10 @@
   --chrome-tabs-menu-icon-color: var(--chrome-tab-text-color);
   --chrome-tabs-menu-icon-background: rgb(255 255 255 / 62%);
   --chrome-tabs-menu-shadow: 0 6px 18px rgb(60 64 67 / 24%);
+  --chrome-tabs-tooltip-background: #fff;
+  --chrome-tabs-tooltip-border-color: #dadce0;
+  --chrome-tabs-tooltip-text-color: var(--chrome-tab-text-color);
+  --chrome-tabs-tooltip-shadow: 0 2px 4px rgba(60, 64, 67, 0.067);
 
   position: relative;
   z-index: 1000;
@@ -41,6 +45,7 @@
 }
 
 .tab-navigation {
+  position: relative;
   display: flex;
   min-width: 0;
   flex: 1;
@@ -69,18 +74,30 @@
 }
 
 .tab-scroll-button {
+  position: absolute;
+  top: 0;
+  bottom: 0;
   z-index: 5;
   display: grid;
-  width: 26px;
-  height: var(--chrome-tab-height);
-  align-self: flex-end;
+  width: 36px;
   padding: 0;
   border: 0;
   color: var(--chrome-tab-text-color);
   background: var(--chrome-tabs-background);
   cursor: pointer;
-  flex: 0 0 26px;
   place-items: center;
+  outline: none;
+  isolation: isolate;
+}
+
+.tab-scroll-button[data-direction='left'] {
+  left: 0;
+  box-shadow: 4px 0 8px rgb(60 64 67 / 12%);
+}
+
+.tab-scroll-button[data-direction='right'] {
+  right: 0;
+  box-shadow: -4px 0 8px rgb(60 64 67 / 12%);
 }
 
 .tab-scroll-button[hidden] {
@@ -89,7 +106,24 @@
 
 .tab-scroll-button:hover:not(:disabled) {
   color: var(--chrome-tabs-accent-color);
-  background: var(--chrome-tab-hover-background);
+}
+
+.tab-scroll-button::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: transparent;
+}
+
+.tab-scroll-button:hover:not(:disabled)::before {
+  background: var(--chrome-tab-active-background);
+}
+
+.tab-scroll-button:focus-visible::before {
+  box-shadow: 0 0 0 2px var(--chrome-tabs-accent-color);
 }
 
 .tab-scroll-button:disabled {
@@ -98,6 +132,8 @@
 }
 
 .tab-scroll-button svg {
+  position: relative;
+  z-index: 1;
   width: 16px;
   height: 16px;
   fill: none;
@@ -247,6 +283,29 @@
   padding: 0 6px;
 }
 
+.chrome-tab-content::after {
+  content: '';
+  position: absolute;
+  right: 4px;
+  width: 30px;
+  height: 18px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--chrome-tab-hover-background) 45%
+  );
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chrome-tab:hover .chrome-tab-content::after {
+  opacity: 1;
+}
+
+.chrome-tab[data-active]:hover .chrome-tab-content::after {
+  background: linear-gradient(90deg, transparent, var(--tab-background) 45%);
+}
+
 .chrome-tab-title {
   overflow: hidden;
   flex: 1;
@@ -255,14 +314,36 @@
   white-space: nowrap;
 }
 
+.chrome-tab-icon {
+  display: grid;
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  color: var(--chrome-tab-text-color);
+  flex: 0 0 16px;
+  place-items: center;
+}
+
+.chrome-tab[data-active] .chrome-tab-icon {
+  color: var(--chrome-tab-active-text-color);
+}
+
+.chrome-tab-icon > * {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .chrome-tab[data-active] .chrome-tab-title {
   color: var(--chrome-tab-active-text-color);
 }
 
 .chrome-tab-close {
   position: absolute;
+  z-index: 1;
   right: 4px;
-  width: 30px;
+  width: 18px;
   height: 18px;
   padding: 0;
   border: 0;
@@ -278,50 +359,32 @@
   content: '';
   position: absolute;
   top: 50%;
-  right: 4px;
+  left: 50%;
   width: 9px;
   height: 1px;
   background: var(--chrome-tab-text-color);
-  transform: translateY(-50%) rotate(45deg);
+  transform: translate(-50%, -50%) rotate(45deg);
 }
 
 .chrome-tab-close::after {
-  transform: translateY(-50%) rotate(-45deg);
+  transform: translate(-50%, -50%) rotate(-45deg);
 }
 
 .chrome-tab:hover .chrome-tab-close {
-  background:
-    linear-gradient(90deg, transparent, var(--chrome-tab-hover-background) 45%);
   opacity: 1;
   pointer-events: auto;
 }
 
 .chrome-tab:not([data-active]):hover .chrome-tab-close:hover {
-  background:
-    radial-gradient(
-      circle 9px at calc(100% - 8px) 50%,
-      var(--chrome-tab-close-hover-background) 95%,
-      transparent
-    ),
-    linear-gradient(90deg, transparent, var(--chrome-tab-hover-background) 45%);
+  background: var(--chrome-tab-close-hover-background);
 }
 
 .chrome-tab[data-active]:hover .chrome-tab-close {
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--tab-background) 45%
-  );
+  background: transparent;
 }
 
 .chrome-tab[data-active]:hover .chrome-tab-close:hover {
-  background:
-    radial-gradient(
-      circle 9px at calc(100% - 8px) 50%,
-      var(--chrome-tab-close-hover-background) 95%,
-      transparent
-    ),
-    linear-gradient(90deg, transparent, var(--tab-background) 45%);
+  background: var(--chrome-tab-close-hover-background);
 }
  
 
@@ -361,6 +424,10 @@
   flex-shrink: 0;
   place-items: center;
   align-self: flex-end;
+}
+
+.chrome-tabs-content:not(:has(.chrome-tab)) .new-tab-divider {
+  display: none;
 }
 
 .new-tab-divider::after {
@@ -562,4 +629,78 @@
   margin-bottom: 4px;
   border-bottom: 1px solid #e8eaed;
   border-radius: 5px 5px 0 0;
+}
+
+.tab-popover {
+  position: fixed;
+  z-index: 1200;
+  box-sizing: border-box;
+  border: 1px solid var(--chrome-tabs-menu-border-color);
+  border-radius: 12px;
+  color: var(--chrome-tabs-menu-text-color);
+  background: var(--chrome-tabs-menu-background);
+  /* box-shadow: var(--chrome-tabs-menu-shadow); */
+  font: var(--chrome-tabs-font);
+}
+
+.tab-popover[hidden] {
+  display: none;
+}
+
+.tab-popover[data-kind='tooltip'] {
+  max-width: min(360px, calc(100vw - 16px));
+  padding: 8px 12px;
+  border-color: var(--chrome-tabs-tooltip-border-color);
+  color: var(--chrome-tabs-tooltip-text-color);
+  background: var(--chrome-tabs-tooltip-background);
+  box-shadow: var(--chrome-tabs-tooltip-shadow);
+}
+
+.tab-popover[data-kind='tooltip'][data-moving] {
+  transition: left 140ms ease-out;
+}
+
+.tab-tooltip-content {
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+  white-space: normal;
+}
+
+.tab-popover[data-kind='overflow'] {
+  width: min(240px, calc(100vw - 16px));
+  max-height: min(320px, calc(100vh - 16px));
+  padding: 6px;
+  overflow-y: auto;
+}
+
+.overflow-tab-list {
+  display: grid;
+}
+
+.overflow-tab-option {
+  overflow: hidden;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 7px;
+  color: var(--chrome-tabs-menu-text-color);
+  background: transparent;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.overflow-tab-option:hover,
+.overflow-tab-option:focus-visible {
+  background: var(--chrome-tabs-menu-hover-background);
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-popover[data-kind='tooltip'][data-moving] {
+    transition: none;
+  }
 }

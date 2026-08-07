@@ -1,0 +1,20 @@
+---
+title: 新增按钮
+description: 处理新增标签事件并控制按钮显示
+---
+
+用户单击新增按钮时，组件触发 `tab-add` 事件。应用创建标签后重新设置 `tabs`：
+
+```js
+tabsElement.addEventListener('tab-add', () => {
+  const tab = { id: crypto.randomUUID(), title: '新标签' };
+  tabsElement.tabs = [...tabsElement.tabs, tab];
+  tabsElement.activeTabId = tab.id;
+});
+```
+
+不需要用户新增标签时，可以隐藏按钮。按钮默认显示：
+
+```js
+tabsElement.hideAddButton = true;
+```

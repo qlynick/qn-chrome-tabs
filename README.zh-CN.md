@@ -238,6 +238,15 @@ export function Tabs() {
 | `id` | `string` | 是 | 标签唯一标识 |
 | `title` | `string` | 是 | 显示名称 |
 | `backgroundColor` | `string` | 否 | 当前标签激活时的独立背景色 |
+| `icon` | `ChromeTabIcon` | 否 | 图片或同源根路径 Favicon；Favicon 默认使用 `/favicon.ico` |
+
+```ts
+element.tabs = [
+  { id: 'image', title: '图片', icon: { type: 'image', src: '/icons/app.svg' } },
+  { id: 'favicon', title: '网站', icon: { type: 'favicon', url: 'https://example.com/page' } },
+  { id: 'png', title: 'PNG', icon: { type: 'favicon', url: 'https://example.com', path: '/favicon.png' } },
+];
+```
 
 ### ChromeTabGroup
 
@@ -255,6 +264,19 @@ export function Tabs() {
 | `groups` | `ChromeTabGroup[]` | 所有可切换分组 |
 | `activeGroupId` | `string` | 当前分组 |
 | `locale` | `'zh' \| 'en' \| 'ko'` | 界面语言；未设置时自动识别浏览器语言 |
+| `hideAddButton` | `boolean` | 是否隐藏新增标签按钮 |
+| `hideGroupButton` | `boolean` | 是否隐藏分组下拉入口 |
+| `tabTooltipMode` | `'truncated' \| 'always' \| 'never'` | 仅标题被裁剪时显示、全部显示或全部关闭标签提示 |
+| `renderTabIcon` | `(tab: ChromeTabItem) => Node \| null` | 自定义图标渲染；返回 `null` 时回退到 `tab.icon` |
+| `renderTabTooltip` | `(tab: ChromeTabItem) => Node \| string \| null` | 自定义标签提示内容；返回 `null` 可禁用当前标签的提示 |
+
+```ts
+element.renderTabTooltip = (tab) => {
+  const content = document.createElement('div');
+  content.textContent = tab.title;
+  return content;
+};
+```
 
 ## 事件
 
@@ -349,6 +371,10 @@ CSS 变量用于稳定的主题配置，建议优先使用。
 | `--chrome-tabs-menu-icon-color` | 普通标签文字色 | 下拉、重命名和删除图标颜色 |
 | `--chrome-tabs-menu-icon-background` | `rgb(255 255 255 / 62%)` | 分组菜单入口图标背景 |
 | `--chrome-tabs-menu-shadow` | `0 6px 18px ...` | 菜单阴影 |
+| `--chrome-tabs-tooltip-background` | `#fff` | 标签提示背景 |
+| `--chrome-tabs-tooltip-border-color` | `#dadce0` | 标签提示边框颜色 |
+| `--chrome-tabs-tooltip-text-color` | 普通标签文字色 | 标签提示文字颜色 |
+| `--chrome-tabs-tooltip-shadow` | `0 6px 18px ...` | 标签提示阴影 |
 
 ```css
 qn-chrome-tabs {
@@ -373,6 +399,7 @@ qn-chrome-tabs {
 | `tab` | 每个标签 |
 | `active-tab` | 当前活动标签，同时具有 `tab` part |
 | `title` | 标签标题 |
+| `icon` | 标签图标 |
 | `close-button` | 标签关闭按钮 |
 | `add-button` | 新增标签按钮 |
 | `scroll-left-button` | 标签溢出时的向左滚动按钮 |
@@ -382,6 +409,8 @@ qn-chrome-tabs {
 | `group-option` | 分组选项 |
 | `active-group-option` | 当前分组选项 |
 | `context-menu` | 标签右键菜单 |
+| `tab-popover` | 标签提示或隐藏标签列表浮层 |
+| `overflow-tab-option` | 隐藏标签列表项 |
 
 ```css
 qn-chrome-tabs::part(group-toggle) {

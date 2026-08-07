@@ -17,7 +17,20 @@ export interface ChromeTabItem {
     id: string;
     title: string;
     backgroundColor?: string;
+    icon?: ChromeTabIcon;
 }
+export type ChromeTabIcon = {
+    type: 'image';
+    src: string;
+    alt?: string;
+} | {
+    type: 'favicon';
+    url: string;
+    path?: string;
+    alt?: string;
+};
+export type ChromeTabIconRenderer = (tab: ChromeTabItem) => Node | null;
+export type ChromeTabTooltipRenderer = (tab: ChromeTabItem) => Node | string | null;
 export interface ChromeTabEventDetail {
     tabId: string;
 }
@@ -34,8 +47,11 @@ export interface ChromeTabReorderEventDetail {
     position: 'before' | 'after';
 }
 export type ChromeTabsLocale = 'zh' | 'en' | 'ko';
+export type ChromeTabTooltipMode = 'truncated' | 'always' | 'never';
 export declare class ChromeTabsElement extends HTMLElement {
     #private;
+    renderTabIcon: ChromeTabIconRenderer | null;
+    renderTabTooltip: ChromeTabTooltipRenderer | null;
     constructor();
     connectedCallback(): void;
     disconnectedCallback(): void;
@@ -49,4 +65,10 @@ export declare class ChromeTabsElement extends HTMLElement {
     get activeGroupId(): string;
     set locale(value: ChromeTabsLocale);
     get locale(): ChromeTabsLocale;
+    set tabTooltipMode(value: ChromeTabTooltipMode);
+    get tabTooltipMode(): ChromeTabTooltipMode;
+    set hideAddButton(value: boolean);
+    get hideAddButton(): boolean;
+    set hideGroupButton(value: boolean);
+    get hideGroupButton(): boolean;
 }

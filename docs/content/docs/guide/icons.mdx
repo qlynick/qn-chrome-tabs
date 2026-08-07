@@ -1,0 +1,62 @@
+---
+title: 标签图标
+description: 配置图片、Favicon 和自定义标签图标
+---
+
+## 图片图标
+
+使用 `image` 类型显示 SVG、PNG、GIF、APNG、WebP 等浏览器支持的图片格式：
+
+```js
+tabsElement.tabs = [
+  {
+    id: 'home',
+    title: '首页',
+    icon: { type: 'image', src: '/icons/home.svg', alt: '首页' },
+  },
+];
+```
+
+## 网站 Favicon
+
+使用 `favicon` 类型时，组件默认读取网页同源根路径下的 `/favicon.ico`：
+
+```js
+tabsElement.tabs = [
+  {
+    id: 'github',
+    title: 'GitHub',
+    icon: { type: 'favicon', url: 'https://github.com/qlynick' },
+  },
+];
+```
+
+如果已知网站使用其他路径或格式，通过 `path` 指定：
+
+```js
+tabsElement.tabs = [
+  {
+    id: 'github',
+    title: 'GitHub',
+    icon: {
+      type: 'favicon',
+      url: 'https://github.com',
+      path: '/fluidicon.png',
+    },
+  },
+];
+```
+
+## 自定义图标
+
+`renderTabIcon` 可以返回任意 DOM 节点。返回 `null` 时，组件继续使用当前标签的 `icon` 配置：
+
+```js
+tabsElement.renderTabIcon = (tab) => {
+  if (tab.id !== 'favorite') return null;
+
+  const icon = document.createElement('span');
+  icon.textContent = '★';
+  return icon;
+};
+```

@@ -21,7 +21,29 @@ export interface ChromeTabItem {
   id: string;
   title: string;
   backgroundColor?: string;
+  icon?: ChromeTabIcon;
 }
+
+export type ChromeTabIcon =
+  | {
+    type: 'image';
+    src: string;
+    alt?: string;
+  }
+  | {
+    type: 'favicon';
+    url: string;
+    path?: string;
+    alt?: string;
+  };
+
+export type ChromeTabIconRenderer = (
+  tab: ChromeTabItem,
+) => Node | null;
+
+export type ChromeTabTooltipRenderer = (
+  tab: ChromeTabItem,
+) => Node | string | null;
 
 export interface ChromeTabEventDetail {
   tabId: string;
@@ -43,6 +65,7 @@ export interface ChromeTabReorderEventDetail {
 }
 
 export type ChromeTabsLocale = 'zh' | 'en' | 'ko';
+export type ChromeTabTooltipMode = 'truncated' | 'always' | 'never';
 
 const messages = {
   zh: {
@@ -97,12 +120,18 @@ function browserLocale(): ChromeTabsLocale {
 }
 
 export class ChromeTabsElement extends HTMLElement {
+  renderTabIcon: ChromeTabIconRenderer | null = null;
+  renderTabTooltip: ChromeTabTooltipRenderer | null = null;
   #tabs: ChromeTabItem[] = [];
   #activeTabId = '';
   #groups: ChromeTabGroup[] = [];
   #activeGroupId = '';
   #locale: ChromeTabsLocale = browserLocale();
+  #tabTooltipMode: ChromeTabTooltipMode = 'truncated';
+  #hideAddButton = false;
+  #hideGroupButton = false;
   #frozenTabWidths = new Map<string, number>();
+  #addAnchorRight: number | null = null;
   #enteringTabIds = new Set<string>();
   #tabsInitialized = false;
   readonly #navigation: HTMLDivElement;
@@ -112,19 +141,31 @@ export class ChromeTabsElement extends HTMLElement {
   readonly #scrollRightButton: HTMLButtonElement;
   readonly #groupContent: HTMLDivElement;
   readonly #contextMenu: HTMLDivElement;
-  readonly #resizeObserver = new ResizeObserver(() => this.#updateScrollControls());
+  readonly #tabPopover: HTMLDivElement;
+  #popoverAnchor: HTMLElement | null = null;
+  #popoverAlignRight = false;
+  #popoverCloseTimer: number | undefined;
+  readonly #repositionTabPopover = () => {
+    this.#tabPopover.removeAttribute('data-moving');
+    this.#positionTabPopover();
+  };
+  readonly #resizeObserver = new ResizeObserver(() => {
+    this.#updateScrollControls();
+    this.#alignAddPosition();
+  });
   readonly #closeMenuOnOutsideClick = (event: PointerEvent) => {
     const path = event.composedPath();
     const groupMenu =
       this.shadowRoot?.querySelector<HTMLDetailsElement>('.group-menu');
     if (groupMenu && !path.includes(groupMenu)) groupMenu.open = false;
     if (!path.includes(this.#contextMenu)) this.#contextMenu.hidden = true;
+    if (!path.includes(this.#tabPopover)) this.#closeTabPopover();
   };
 
   constructor() {
     super();
     const root = this.attachShadow({ mode: 'open' });
-    root.innerHTML = `<style>${styles}</style><div class="tab-strip" part="strip"><div class="tab-navigation"><button class="tab-scroll-button" data-direction="left" part="scroll-left-button" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 7-5 5 5 5"/></svg></button><div class="chrome-tabs" part="tab-list" role="tablist"><div class="chrome-tabs-content"></div></div><button class="tab-scroll-button" data-direction="right" part="scroll-right-button" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 7 5 5-5 5"/></svg></button></div><div class="group-content"></div></div><div class="tab-context-menu" part="context-menu" hidden></div>`;
+    root.innerHTML = `<style>${styles}</style><div class="tab-strip" part="strip"><div class="tab-navigation"><button class="tab-scroll-button" data-direction="left" part="scroll-left-button" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 7-5 5 5 5"/></svg></button><div class="chrome-tabs" part="tab-list" role="tablist"><div class="chrome-tabs-content"></div></div><button class="tab-scroll-button" data-direction="right" part="scroll-right-button" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 7 5 5-5 5"/></svg></button></div><div class="group-content"></div></div><div class="tab-context-menu" part="context-menu" hidden></div><div class="tab-popover" part="tab-popover" hidden></div>`;
     this.#navigation = root.querySelector('.tab-navigation')!;
     this.#viewport = root.querySelector('.chrome-tabs')!;
     this.#content = root.querySelector('.chrome-tabs-content')!;
@@ -132,8 +173,18 @@ export class ChromeTabsElement extends HTMLElement {
     this.#scrollRightButton = root.querySelector('[data-direction="right"]')!;
     this.#groupContent = root.querySelector('.group-content')!;
     this.#contextMenu = root.querySelector('.tab-context-menu')!;
-    this.#navigation.addEventListener('pointerleave', () => this.#releaseTabWidths());
-    this.#viewport.addEventListener('scroll', () => this.#updateScrollControls());
+    this.#tabPopover = root.querySelector('.tab-popover')!;
+    this.#tabPopover.addEventListener('pointerenter', () => this.#cancelPopoverClose());
+    this.#tabPopover.addEventListener('pointerleave', () => this.#schedulePopoverClose());
+    this.#navigation.addEventListener('pointerleave', () => {
+      this.#releaseTabWidths();
+      this.#releaseAddPosition();
+    });
+    this.#viewport.addEventListener('scroll', () => {
+      this.#updateScrollControls();
+      this.#alignAddPosition();
+      this.#repositionTabPopover();
+    });
     this.#viewport.addEventListener('wheel', (event) => {
       if (this.#viewport.scrollWidth <= this.#viewport.clientWidth) return;
       event.preventDefault();
@@ -143,10 +194,18 @@ export class ChromeTabsElement extends HTMLElement {
           : event.deltaY;
     }, { passive: false });
     for (const button of [this.#scrollLeftButton, this.#scrollRightButton]) {
+      const direction = button === this.#scrollLeftButton ? 'left' : 'right';
+      button.setAttribute('aria-haspopup', 'menu');
+      button.setAttribute('aria-expanded', 'false');
+      button.addEventListener('pointerenter', () => {
+        this.#showOverflowTabs(button, direction);
+      });
+      button.addEventListener('pointerleave', () => this.#schedulePopoverClose());
       button.addEventListener('click', () => {
-        const direction = button === this.#scrollLeftButton ? -1 : 1;
+        const offsetDirection = direction === 'left' ? -1 : 1;
+        this.#closeTabPopover();
         this.#viewport.scrollBy({
-          left: direction * Math.max(160, this.#viewport.clientWidth * 0.7),
+          left: offsetDirection * Math.max(160, this.#viewport.clientWidth * 0.7),
           behavior: 'smooth',
         });
       });
@@ -155,15 +214,24 @@ export class ChromeTabsElement extends HTMLElement {
 
   connectedCallback() {
     document.addEventListener('pointerdown', this.#closeMenuOnOutsideClick);
+    window.addEventListener('scroll', this.#repositionTabPopover, true);
+    window.addEventListener('resize', this.#repositionTabPopover);
     this.#resizeObserver.observe(this.#viewport);
   }
 
   disconnectedCallback() {
     document.removeEventListener('pointerdown', this.#closeMenuOnOutsideClick);
+    window.removeEventListener('scroll', this.#repositionTabPopover, true);
+    window.removeEventListener('resize', this.#repositionTabPopover);
     this.#resizeObserver.disconnect();
+    this.#cancelPopoverClose();
   }
 
   set tabs(value: ChromeTabItem[]) {
+    if (value.length < this.#tabs.length) {
+      this.#addAnchorRight = null;
+      this.#content.style.removeProperty('transform');
+    }
     if (this.#tabsInitialized) {
       const currentTabIds = new Set(this.#tabs.map((tab) => tab.id));
       for (const tab of value) {
@@ -215,6 +283,38 @@ export class ChromeTabsElement extends HTMLElement {
     return this.#locale;
   }
 
+  set tabTooltipMode(value: ChromeTabTooltipMode) {
+    this.#tabTooltipMode =
+      value === 'always' || value === 'never' ? value : 'truncated';
+    if (this.#tabTooltipMode === 'never') this.#closeTabPopover();
+  }
+
+  get tabTooltipMode(): ChromeTabTooltipMode {
+    return this.#tabTooltipMode;
+  }
+
+  set hideAddButton(value: boolean) {
+    this.#hideAddButton = Boolean(value);
+    if (this.#hideAddButton) {
+      this.#addAnchorRight = null;
+      this.#content.style.removeProperty('transform');
+    }
+    this.#render();
+  }
+
+  get hideAddButton(): boolean {
+    return this.#hideAddButton;
+  }
+
+  set hideGroupButton(value: boolean) {
+    this.#hideGroupButton = Boolean(value);
+    this.#render();
+  }
+
+  get hideGroupButton(): boolean {
+    return this.#hideGroupButton;
+  }
+
   #emit(
     name: string,
     detail?:
@@ -230,11 +330,15 @@ export class ChromeTabsElement extends HTMLElement {
   }
 
   #render() {
+    this.#closeTabPopover();
+    if (this.#tabs.length === 0) {
+      this.#addAnchorRight = null;
+      this.#content.style.removeProperty('transform');
+      this.#viewport.scrollLeft = 0;
+    }
     const text = messages[this.#locale];
     this.#scrollLeftButton.setAttribute('aria-label', text.scrollLeft);
-    this.#scrollLeftButton.title = text.scrollLeft;
     this.#scrollRightButton.setAttribute('aria-label', text.scrollRight);
-    this.#scrollRightButton.title = text.scrollRight;
     const fragment = document.createDocumentFragment();
 
     for (const tab of this.#tabs) {
@@ -323,10 +427,25 @@ export class ChromeTabsElement extends HTMLElement {
       const content = document.createElement('div');
       content.className = 'chrome-tab-content';
 
+      const icon = this.#createTabIcon(tab);
+
       const title = document.createElement('span');
       title.className = 'chrome-tab-title';
       title.setAttribute('part', 'title');
       title.textContent = tab.title;
+      element.addEventListener('pointerenter', () => {
+        const shouldShow = this.#tabTooltipMode === 'always'
+          || (
+            this.#tabTooltipMode === 'truncated'
+            && title.scrollWidth > title.clientWidth
+          );
+        if (shouldShow) {
+          this.#showTabTooltip(tab, element);
+        } else {
+          this.#closeTabPopover();
+        }
+      });
+      element.addEventListener('pointerleave', () => this.#schedulePopoverClose());
 
       const close = document.createElement('button');
       close.type = 'button';
@@ -349,6 +468,7 @@ export class ChromeTabsElement extends HTMLElement {
         window.setTimeout(finish, 200);
       });
 
+      if (icon) content.append(icon);
       content.append(title, close);
       element.append(dividers, background, content);
       fragment.append(element);
@@ -365,6 +485,11 @@ export class ChromeTabsElement extends HTMLElement {
     add.setAttribute('aria-label', text.addTab);
     add.title = text.addTabTitle;
     add.textContent = '+';
+    add.addEventListener('pointerdown', (event) => {
+      if (event.pointerType !== 'mouse' || event.button !== 0) return;
+      if (this.#content.querySelectorAll('.chrome-tab').length < 5) return;
+      this.#addAnchorRight ??= this.#lastTabLayoutRight();
+    });
     add.addEventListener('click', () => {
       this.#closeMenu();
       this.#emit(chromeTabsEvents.add);
@@ -451,12 +576,17 @@ export class ChromeTabsElement extends HTMLElement {
 
     groupDropdown.append(groupActions);
     groupMenu.append(groupSummary, groupDropdown);
-    fragment.append(divider, addSlot);
+    if (!this.#hideAddButton) fragment.append(divider, addSlot);
     this.#content.replaceChildren(fragment);
-    this.#groupContent.replaceChildren(groupMenu);
+    if (this.#hideGroupButton) {
+      this.#groupContent.replaceChildren();
+    } else {
+      this.#groupContent.replaceChildren(groupMenu);
+    }
     requestAnimationFrame(() => {
       this.#updateScrollControls();
       if (this.#frozenTabWidths.size === 0) this.#scrollActiveTabIntoView();
+      this.#alignAddPosition();
     });
   }
 
@@ -495,32 +625,251 @@ export class ChromeTabsElement extends HTMLElement {
     this.#updateScrollControls();
   }
 
+  #releaseAddPosition() {
+    if (this.#addAnchorRight === null) return;
+    this.#addAnchorRight = null;
+    this.#content.style.removeProperty('transform');
+    this.#updateScrollControls();
+    this.#scrollActiveTabIntoView();
+  }
+
+  #alignAddPosition() {
+    if (this.#addAnchorRight === null) return;
+    const lastTabRight = this.#lastTabLayoutRight();
+    if (lastTabRight === null) return;
+    const offset = this.#addAnchorRight - lastTabRight;
+    this.#content.style.transform = `translateX(${offset}px)`;
+  }
+
+  #lastTabLayoutRight() {
+    const tabs = this.#content.querySelectorAll<HTMLElement>('.chrome-tab');
+    const lastTab = tabs[tabs.length - 1];
+    if (!lastTab) return null;
+    return this.#viewport.getBoundingClientRect().left
+      - this.#viewport.scrollLeft
+      + lastTab.offsetLeft
+      + lastTab.offsetWidth;
+  }
+
   #scrollActiveTabIntoView() {
     const active = this.#content.querySelector<HTMLElement>('[data-active]');
     if (!active) return;
     const left = active.offsetLeft;
     const right = left + active.offsetWidth;
-    if (left < this.#viewport.scrollLeft) {
-      this.#viewport.scrollLeft = left;
-    } else if (right > this.#viewport.scrollLeft + this.#viewport.clientWidth) {
-      this.#viewport.scrollLeft = right - this.#viewport.clientWidth;
+    const radius = Number.parseFloat(
+      getComputedStyle(this).getPropertyValue('--chrome-tab-radius'),
+    );
+    const cornerSpace = Number.isFinite(radius) ? radius + 2 : 10;
+    const leftControlSpace = this.#scrollLeftButton.hidden
+      ? 0
+      : this.#scrollLeftButton.offsetWidth;
+    const rightControlSpace = this.#scrollRightButton.hidden
+      ? 0
+      : this.#scrollRightButton.offsetWidth;
+    if (left - cornerSpace < this.#viewport.scrollLeft + leftControlSpace) {
+      this.#viewport.scrollLeft = Math.max(
+        0,
+        left - cornerSpace - leftControlSpace,
+      );
+    } else if (
+      right + cornerSpace
+      > this.#viewport.scrollLeft + this.#viewport.clientWidth - rightControlSpace
+    ) {
+      this.#viewport.scrollLeft =
+        right + cornerSpace + rightControlSpace - this.#viewport.clientWidth;
     }
   }
 
   #updateScrollControls() {
-    if (this.#frozenTabWidths.size > 0) return;
-    const buttonWidth = this.#scrollLeftButton.hidden
-      ? 0
-      : this.#scrollLeftButton.offsetWidth + this.#scrollRightButton.offsetWidth;
-    const availableWidth = this.#viewport.clientWidth + buttonWidth;
-    const overflow = this.#viewport.scrollWidth > availableWidth + 1;
-    this.#scrollLeftButton.hidden = !overflow;
-    this.#scrollRightButton.hidden = !overflow;
+    if (this.#frozenTabWidths.size > 0 || this.#addAnchorRight !== null) return;
+    const overflow = this.#viewport.scrollWidth > this.#viewport.clientWidth + 1;
     const maxScrollLeft =
       this.#viewport.scrollWidth - this.#viewport.clientWidth;
-    this.#scrollLeftButton.disabled = this.#viewport.scrollLeft <= 1;
-    this.#scrollRightButton.disabled =
-      this.#viewport.scrollLeft >= maxScrollLeft - 1;
+    this.#scrollLeftButton.hidden =
+      !overflow || this.#viewport.scrollLeft <= 1;
+    this.#scrollRightButton.hidden =
+      !overflow || this.#viewport.scrollLeft >= maxScrollLeft - 1;
+    this.#scrollLeftButton.disabled = false;
+    this.#scrollRightButton.disabled = false;
+  }
+
+  #showOverflowTabs(
+    anchor: HTMLButtonElement,
+    direction: 'left' | 'right',
+  ) {
+    this.#cancelPopoverClose();
+    const elements = new Map(
+      [...this.#content.querySelectorAll<HTMLElement>('.chrome-tab')]
+        .map((element) => [element.dataset.tabId, element]),
+    );
+    const visibleLeft = this.#viewport.scrollLeft
+      + (this.#scrollLeftButton.hidden ? 0 : this.#scrollLeftButton.offsetWidth);
+    const visibleRight = this.#viewport.scrollLeft
+      + this.#viewport.clientWidth
+      - (this.#scrollRightButton.hidden ? 0 : this.#scrollRightButton.offsetWidth);
+    const hiddenTabs = this.#tabs.filter((tab) => {
+      const element = elements.get(tab.id);
+      if (!element) return false;
+      return direction === 'left'
+        ? element.offsetLeft < visibleLeft
+        : element.offsetLeft + element.offsetWidth > visibleRight;
+    });
+    if (hiddenTabs.length === 0) {
+      this.#closeTabPopover();
+      return;
+    }
+
+    const list = document.createElement('div');
+    list.className = 'overflow-tab-list';
+    list.setAttribute('role', 'menu');
+    for (const tab of hiddenTabs) {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'overflow-tab-option';
+      item.setAttribute('part', 'overflow-tab-option');
+      item.setAttribute('role', 'menuitem');
+      item.textContent = tab.title;
+      item.addEventListener('click', () => {
+        this.#closeTabPopover();
+        this.#emit(chromeTabsEvents.activate, { tabId: tab.id });
+      });
+      list.append(item);
+    }
+
+    this.#openTabPopover(anchor, list, 'overflow', direction === 'right');
+    anchor.setAttribute('aria-expanded', 'true');
+  }
+
+  #createTabIcon(tab: ChromeTabItem) {
+    const customIcon = this.renderTabIcon?.(tab);
+    const image = customIcon ? null : this.#createTabIconImage(tab);
+    if (!customIcon && !image) return null;
+
+    const wrapper = document.createElement('span');
+    wrapper.className = 'chrome-tab-icon';
+    wrapper.setAttribute('part', 'icon');
+    if (customIcon) {
+      wrapper.append(customIcon);
+    } else if (image) {
+      image.addEventListener('error', () => wrapper.remove(), { once: true });
+      wrapper.append(image);
+    }
+    return wrapper;
+  }
+
+  #createTabIconImage(tab: ChromeTabItem) {
+    if (!tab.icon) return null;
+    const image = document.createElement('img');
+    image.alt = tab.icon.alt ?? '';
+    image.decoding = 'async';
+    if (tab.icon.type === 'image') {
+      image.src = tab.icon.src;
+      return image;
+    }
+    try {
+      const pageUrl = new URL(tab.icon.url, document.baseURI);
+      image.src = new URL(
+        tab.icon.path ?? '/favicon.ico',
+        `${pageUrl.origin}/`,
+      ).href;
+      return image;
+    } catch {
+      return null;
+    }
+  }
+
+  #showTabTooltip(tab: ChromeTabItem, anchor: HTMLElement) {
+    this.#cancelPopoverClose();
+    const content = this.renderTabTooltip
+      ? this.renderTabTooltip(tab)
+      : tab.title;
+    if (content === null) {
+      this.#closeTabPopover();
+      return;
+    }
+    const body = document.createElement('div');
+    body.className = 'tab-tooltip-content';
+    if (typeof content === 'string') {
+      body.textContent = content;
+    } else {
+      body.append(content);
+    }
+    this.#openTabPopover(anchor, body, 'tooltip');
+  }
+
+  #openTabPopover(
+    anchor: HTMLElement,
+    content: Node,
+    kind: 'overflow' | 'tooltip',
+    alignRight = false,
+  ) {
+    const animatePosition =
+      !this.#tabPopover.hidden
+      && this.#tabPopover.dataset.kind === 'tooltip'
+      && kind === 'tooltip';
+    this.#tabPopover.removeAttribute('data-moving');
+    if (this.#popoverAnchor instanceof HTMLButtonElement) {
+      this.#popoverAnchor.setAttribute('aria-expanded', 'false');
+    }
+    this.#popoverAnchor = anchor;
+    this.#popoverAlignRight = alignRight;
+    this.#tabPopover.dataset.kind = kind;
+    this.#tabPopover.setAttribute('role', kind === 'tooltip' ? 'tooltip' : 'presentation');
+    this.#tabPopover.replaceChildren(content);
+    this.#tabPopover.hidden = false;
+
+    if (animatePosition) {
+      void this.#tabPopover.offsetLeft;
+      this.#tabPopover.toggleAttribute('data-moving', true);
+    }
+    this.#positionTabPopover();
+  }
+
+  #positionTabPopover() {
+    const anchor = this.#popoverAnchor;
+    if (!anchor || this.#tabPopover.hidden) return;
+    if (!anchor.isConnected) {
+      this.#closeTabPopover();
+      return;
+    }
+
+    const anchorRect = anchor.getBoundingClientRect();
+    const width = this.#tabPopover.offsetWidth;
+    const height = this.#tabPopover.offsetHeight;
+    const left = this.#popoverAlignRight
+      ? anchorRect.right - width
+      : anchorRect.left;
+    this.#tabPopover.style.left =
+      `${Math.max(8, Math.min(left, window.innerWidth - width - 8))}px`;
+    const below = anchorRect.bottom + 6;
+    this.#tabPopover.style.top =
+      `${below + height <= window.innerHeight - 8
+        ? below
+        : Math.max(8, anchorRect.top - height - 6)}px`;
+  }
+
+  #schedulePopoverClose() {
+    this.#cancelPopoverClose();
+    this.#popoverCloseTimer = window.setTimeout(() => {
+      this.#closeTabPopover();
+    }, 120);
+  }
+
+  #cancelPopoverClose() {
+    if (this.#popoverCloseTimer === undefined) return;
+    window.clearTimeout(this.#popoverCloseTimer);
+    this.#popoverCloseTimer = undefined;
+  }
+
+  #closeTabPopover() {
+    this.#cancelPopoverClose();
+    if (this.#popoverAnchor instanceof HTMLButtonElement) {
+      this.#popoverAnchor.setAttribute('aria-expanded', 'false');
+    }
+    this.#popoverAnchor = null;
+    this.#tabPopover.removeAttribute('data-moving');
+    this.#tabPopover.hidden = true;
+    this.#tabPopover.replaceChildren();
   }
 
   #closeMenu() {
@@ -530,6 +879,7 @@ export class ChromeTabsElement extends HTMLElement {
   #closeMenus() {
     this.shadowRoot?.querySelector<HTMLDetailsElement>('.group-menu')?.removeAttribute('open');
     this.#contextMenu.hidden = true;
+    this.#closeTabPopover();
   }
 
   #clearDropIndicators() {
@@ -544,9 +894,9 @@ export class ChromeTabsElement extends HTMLElement {
     const fragment = document.createDocumentFragment();
     for (const [label, eventName] of [
       [text.close, chromeTabsEvents.close],
-      [text.closeLeft, chromeTabsEvents.closeLeft],
       [text.closeRight, chromeTabsEvents.closeRight],
       [text.closeOthers, chromeTabsEvents.closeOthers],
+      [text.closeLeft, chromeTabsEvents.closeLeft],
     ] as const) {
       const button = document.createElement('button');
       button.type = 'button';

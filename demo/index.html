@@ -182,6 +182,27 @@ export function Tabs() {
           </article>
         </div>
       </section>
+
+      <section class="icon-examples">
+        <div class="quick-start-heading">
+          <div>
+            <p class="eyebrow">Tab Icons</p>
+            <h2 data-zh="标签图标示例">标签图标示例</h2>
+          </div>
+          <span data-zh="支持图片、同源 Favicon、指定 Favicon 路径和自定义 SVG。">支持图片、同源 Favicon、指定 Favicon 路径和自定义 SVG。</span>
+        </div>
+        <div class="icon-demo-preview" id="icon-tabs-host"></div>
+        <pre class="usage-code"><code>tabsElement.tabs = [
+  { id: 'image', title: 'SVG image', icon: { type: 'image', src: '/icons/app.svg' } },
+  { id: 'favicon', title: 'Favicon', icon: { type: 'favicon', url: 'https://github.com' } },
+  { id: 'png', title: 'PNG favicon', icon: { type: 'favicon', url: 'https://github.com', path: '/fluidicon.png' } },
+];
+
+tabsElement.renderTabIcon = (tab) =&gt; {
+  if (tab.id !== 'custom') return null;
+  return createCustomSvg();
+};</code></pre>
+      </section>
     </main>
     <script type="module" src="/main.ts"></script>
   </body>

@@ -26,6 +26,9 @@ const eventLog = document.querySelector<HTMLOListElement>('#event-log')!;
 const scriptCode = document.querySelector<HTMLElement>('#script-code')!;
 const languageSelect =
   document.querySelector<HTMLSelectElement>('#language-select')!;
+const localeStorageKey = 'qn-chrome-tabs-demo-locale';
+const presetStorageKey = 'qn-chrome-tabs-demo-preset';
+const themeStorageKey = 'qn-chrome-tabs-demo-theme';
 
 const translations: Record<'en' | 'ko', Record<string, string>> = {
   en: {
@@ -48,6 +51,10 @@ const translations: Record<'en' | 'ko', Record<string, string>> = {
     '快速上手': 'Quick start',
     '纯 HTML 可直接引用 Git 构建产物，也可通过包管理器安装。': 'Use the Git build directly in plain HTML, or install it with a package manager.',
     '纯 HTML（无需安装）': 'Plain HTML (no installation)',
+    '标签图标示例': 'Tab icon examples',
+    '支持图片、同源 Favicon、指定 Favicon 路径和自定义 SVG。': 'Supports images, same-origin favicons, custom favicon paths, and custom SVG.',
+    'SVG 图片': 'SVG image', '默认 Favicon': 'Default favicon',
+    '指定 PNG': 'Custom PNG', '自定义 SVG': 'Custom SVG',
     '首页': 'Home', '文档': 'Docs',
     '工作': 'Work', '学习': 'Study',
     '仪表盘': 'Dashboard', '订单中心': 'Orders', '客户管理': 'Customers',
@@ -107,6 +114,10 @@ const translations: Record<'en' | 'ko', Record<string, string>> = {
     '快速上手': '빠른 시작',
     '纯 HTML 可直接引用 Git 构建产物，也可通过包管理器安装。': '일반 HTML에서는 Git 빌드를 직접 사용하거나 패키지 관리자로 설치할 수 있습니다.',
     '纯 HTML（无需安装）': '순수 HTML (설치 불필요)',
+    '标签图标示例': '탭 아이콘 예제',
+    '支持图片、同源 Favicon、指定 Favicon 路径和自定义 SVG。': '이미지, 동일 출처 파비콘, 사용자 지정 파비콘 경로 및 사용자 지정 SVG를 지원합니다.',
+    'SVG 图片': 'SVG 이미지', '默认 Favicon': '기본 파비콘',
+    '指定 PNG': 'PNG 경로 지정', '自定义 SVG': '사용자 지정 SVG',
     '首页': '홈', '文档': '문서',
     '工作': '업무', '学习': '학습',
     '仪表盘': '대시보드', '订单中心': '주문 센터', '客户管理': '고객 관리',
@@ -157,6 +168,11 @@ function detectLocale(): ChromeTabsLocale {
   }
   if (requestedLocale === 'zh') return 'zh';
 
+  const savedLocale = localStorage.getItem(localeStorageKey);
+  if (savedLocale === 'zh' || savedLocale === 'en' || savedLocale === 'ko') {
+    return savedLocale;
+  }
+
   const language = navigator.language.toLowerCase();
   if (language.startsWith('en')) return 'en';
   if (language.startsWith('ko')) return 'ko';
@@ -190,6 +206,54 @@ let tabs: DemoTab[] = [
 let activeGroupId = 'work';
 
 host.append(tabsElement);
+
+const iconTabsElement = document.createElement(CHROME_TABS_TAG) as ChromeTabsElement;
+iconTabsElement.hideAddButton = true;
+iconTabsElement.hideGroupButton = true;
+const iconTabsHost = document.querySelector<HTMLDivElement>('#icon-tabs-host')!;
+const svgImage = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#2563eb"/><path d="m7 12 3 3 7-7" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+)}`;
+const iconDemoTabs: ChromeTabItem[] = [
+  { id: 'image', title: 'SVG 图片', icon: { type: 'image', src: svgImage } },
+  { id: 'favicon', title: '默认 Favicon', icon: { type: 'favicon', url: 'https://github.com/qlynick' } },
+  { id: 'png', title: '指定 PNG', icon: { type: 'favicon', url: 'https://github.com', path: '/fluidicon.png' } },
+  { id: 'custom', title: '自定义 SVG' },
+];
+let iconActiveTabId = 'image';
+
+iconTabsElement.renderTabIcon = (tab) => {
+  if (tab.id !== 'custom') return null;
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  circle.setAttribute('cx', '12');
+  circle.setAttribute('cy', '12');
+  circle.setAttribute('r', '9');
+  circle.setAttribute('fill', 'none');
+  circle.setAttribute('stroke', 'currentColor');
+  circle.setAttribute('stroke-width', '2');
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', 'm8 12 2.5 2.5L16 9');
+  path.setAttribute('fill', 'none');
+  path.setAttribute('stroke', 'currentColor');
+  path.setAttribute('stroke-width', '2');
+  path.setAttribute('stroke-linecap', 'round');
+  path.setAttribute('stroke-linejoin', 'round');
+  svg.append(circle, path);
+  return svg;
+};
+iconTabsElement.addEventListener(chromeTabsEvents.activate, (event) => {
+  iconActiveTabId = detail<ChromeTabEventDetail>(event).tabId;
+  iconTabsElement.activeTabId = iconActiveTabId;
+});
+iconTabsHost.append(iconTabsElement);
+
+function renderIconDemo() {
+  iconTabsElement.locale = locale;
+  iconTabsElement.tabs = iconDemoTabs.map((tab) => ({ ...tab, title: t(tab.title) }));
+  iconTabsElement.activeTabId = iconActiveTabId;
+}
 
 const themeDefinitions = [
   { variable: '--chrome-tabs-height', label: '标签栏高度', type: 'range', default: 38, min: 32, max: 54, unit: 'px' },
@@ -421,6 +485,18 @@ function updateThemeCode() {
   ].join('\n');
 }
 
+function saveThemeSettings() {
+  localStorage.setItem(
+    themeStorageKey,
+    JSON.stringify(Object.fromEntries(
+      themeDefinitions.map((definition) => [
+        definition.variable,
+        themeInputs.get(definition.variable)?.value ?? String(definition.default),
+      ]),
+    )),
+  );
+}
+
 const categoryTabs = document.createElement('div');
 categoryTabs.className = 'theme-category-tabs';
 categoryTabs.setAttribute('role', 'tablist');
@@ -488,6 +564,8 @@ for (const definition of themeDefinitions) {
     tabsElement.style.setProperty(definition.variable, value);
     output.textContent = value;
     if (!applyingPreset) {
+      localStorage.removeItem(presetStorageKey);
+      saveThemeSettings();
       for (const preset of themePresetsContainer.querySelectorAll('.theme-preset')) {
         preset.removeAttribute('data-active');
       }
@@ -504,6 +582,7 @@ for (const preset of themePresets) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'theme-preset';
+  button.dataset.preset = preset.name;
   const preview = document.createElement('span');
   preview.className = 'theme-preset-preview';
   preview.style.background = preset.values['--chrome-tabs-background'];
@@ -530,8 +609,38 @@ for (const preset of themePresets) {
     for (const item of themePresetsContainer.querySelectorAll('.theme-preset')) {
       item.toggleAttribute('data-active', item === button);
     }
+    localStorage.removeItem(themeStorageKey);
+    localStorage.setItem(presetStorageKey, preset.name);
   });
   themePresetsContainer.append(button);
+}
+
+const savedPreset = localStorage.getItem(presetStorageKey);
+const savedPresetButton = [
+  ...themePresetsContainer.querySelectorAll<HTMLButtonElement>('.theme-preset'),
+].find((button) => button.dataset.preset === savedPreset);
+if (savedPresetButton) {
+  savedPresetButton.click();
+} else {
+  const savedTheme = localStorage.getItem(themeStorageKey);
+  if (savedTheme) {
+    try {
+      const values = JSON.parse(savedTheme) as Record<string, unknown>;
+      applyingPreset = true;
+      for (const definition of themeDefinitions) {
+        const value = values[definition.variable];
+        if (typeof value !== 'string') continue;
+        const input = themeInputs.get(definition.variable)!;
+        input.value = value;
+        input.dispatchEvent(new Event('input'));
+      }
+      applyingPreset = false;
+      saveThemeSettings();
+    } catch {
+      applyingPreset = false;
+      localStorage.removeItem(themeStorageKey);
+    }
+  }
 }
 
 document.querySelector<HTMLButtonElement>('#reset-theme')!
@@ -545,6 +654,8 @@ document.querySelector<HTMLButtonElement>('#reset-theme')!
       tabsElement.style.removeProperty(definition.variable);
       input.dispatchEvent(new Event('input'));
     }
+    localStorage.removeItem(presetStorageKey);
+    localStorage.removeItem(themeStorageKey);
   });
 
 document.querySelector<HTMLButtonElement>('#copy-theme')!
@@ -643,9 +754,16 @@ tabsElement.addEventListener(chromeTabsEvents.add, () => {
 tabsElement.addEventListener(chromeTabsEvents.close, (event) => {
   const { tabId } = detail<ChromeTabEventDetail>(event);
   const current = visibleTabs();
-  if (current.length === 1) return;
   const index = current.findIndex((tab) => tab.id === tabId);
   tabs = tabs.filter((tab) => tab.id !== tabId);
+  if (current.length === 1) {
+    groups = groups.map((group) =>
+      group.id === activeGroupId ? { ...group, activeTabId: '' } : group,
+    );
+    render();
+    log('关闭标签', { tabId });
+    return;
+  }
   if (activeGroup().activeTabId === tabId) {
     activate(current[Math.max(0, index - 1)].id);
   } else {
@@ -655,9 +773,9 @@ tabsElement.addEventListener(chromeTabsEvents.close, (event) => {
 });
 
 for (const [eventName, range] of [
-  [chromeTabsEvents.closeLeft, 'left'],
   [chromeTabsEvents.closeRight, 'right'],
   [chromeTabsEvents.closeOthers, 'others'],
+  [chromeTabsEvents.closeLeft, 'left'],
 ] as const) {
   tabsElement.addEventListener(eventName, (event) => {
     const { tabId } = detail<ChromeTabEventDetail>(event);
@@ -792,6 +910,7 @@ for (const button of document.querySelectorAll<HTMLButtonElement>('[data-script-
 
 function applyLocale(nextLocale: ChromeTabsLocale) {
   locale = nextLocale;
+  localStorage.setItem(localeStorageKey, locale);
   languageSelect.value = locale;
   document.documentElement.lang =
     locale === 'zh' ? 'zh-CN' : locale === 'ko' ? 'ko-KR' : 'en';
@@ -821,6 +940,7 @@ function applyLocale(nextLocale: ChromeTabsLocale) {
   }
   languageSelect.setAttribute('aria-label', t('语言'));
   render();
+  renderIconDemo();
 }
 
 languageSelect.addEventListener('change', () => {

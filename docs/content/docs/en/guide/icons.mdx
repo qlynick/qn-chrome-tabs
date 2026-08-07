@@ -1,0 +1,62 @@
+---
+title: Tab Icons
+description: Configure images, favicons, and custom tab icons
+---
+
+## Image icons
+
+Use the `image` type for SVG, PNG, GIF, APNG, WebP, and other image formats supported by the browser:
+
+```js
+tabsElement.tabs = [
+  {
+    id: 'home',
+    title: 'Home',
+    icon: { type: 'image', src: '/icons/home.svg', alt: 'Home' },
+  },
+];
+```
+
+## Website favicons
+
+With the `favicon` type, the component loads `/favicon.ico` from the website's origin by default:
+
+```js
+tabsElement.tabs = [
+  {
+    id: 'github',
+    title: 'GitHub',
+    icon: { type: 'favicon', url: 'https://github.com/qlynick' },
+  },
+];
+```
+
+If the favicon uses another path or format, specify it with `path`:
+
+```js
+tabsElement.tabs = [
+  {
+    id: 'github',
+    title: 'GitHub',
+    icon: {
+      type: 'favicon',
+      url: 'https://github.com',
+      path: '/fluidicon.png',
+    },
+  },
+];
+```
+
+## Custom icons
+
+`renderTabIcon` can return any DOM node. When it returns `null`, the component falls back to the tab's `icon` configuration:
+
+```js
+tabsElement.renderTabIcon = (tab) => {
+  if (tab.id !== 'favorite') return null;
+
+  const icon = document.createElement('span');
+  icon.textContent = '★';
+  return icon;
+};
+```

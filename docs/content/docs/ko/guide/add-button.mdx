@@ -1,0 +1,20 @@
+---
+title: 추가 버튼
+description: 새 탭 이벤트를 처리하고 버튼 표시 여부를 제어합니다
+---
+
+사용자가 추가 버튼을 클릭하면 컴포넌트가 `tab-add` 이벤트를 발생시킵니다. 애플리케이션에서 탭을 만든 다음 `tabs`를 다시 설정합니다:
+
+```js
+tabsElement.addEventListener('tab-add', () => {
+  const tab = { id: crypto.randomUUID(), title: '새 탭' };
+  tabsElement.tabs = [...tabsElement.tabs, tab];
+  tabsElement.activeTabId = tab.id;
+});
+```
+
+사용자가 탭을 추가할 필요가 없으면 버튼을 숨길 수 있습니다. 버튼은 기본적으로 표시됩니다:
+
+```js
+tabsElement.hideAddButton = true;
+```

@@ -10,13 +10,31 @@ description: 컴포넌트 공개 속성과 TypeScript 데이터 구조
 | `groups` | `ChromeTabGroup[]` | 모든 그룹 |
 | `activeGroupId` | `string` | 현재 활성 그룹 |
 | `locale` | `'zh' \| 'en' \| 'ko'` | 인터페이스 언어 |
+| `hideAddButton` | `boolean` | 탭 추가 버튼을 숨길지 여부 |
+| `hideGroupButton` | `boolean` | 그룹 메뉴 버튼을 숨길지 여부 |
+| `tabTooltipMode` | `'truncated' \| 'always' \| 'never'` | 잘린 제목만 표시하거나, 모든 탭에 표시하거나, 모두 비활성화합니다. |
+| `renderTabIcon` | `(tab: ChromeTabItem) => Node \| null` | 사용자 지정 아이콘 렌더러입니다. `null`이면 `tab.icon`으로 대체됩니다. |
+| `renderTabTooltip` | `(tab: ChromeTabItem) => Node \| string \| null` | 탭 툴팁 콘텐츠를 사용자 지정합니다. `null`을 반환하면 해당 탭에서 비활성화됩니다. |
+
+```ts
+tabsElement.renderTabTooltip = (tab) => {
+  const content = document.createElement('div');
+  content.textContent = tab.title;
+  return content;
+};
+```
 
 ```ts
 interface ChromeTabItem {
   id: string;
   title: string;
   backgroundColor?: string;
+  icon?: ChromeTabIcon;
 }
+
+type ChromeTabIcon =
+  | { type: 'image'; src: string; alt?: string }
+  | { type: 'favicon'; url: string; path?: string; alt?: string };
 
 interface ChromeTabGroup {
   id: string;
